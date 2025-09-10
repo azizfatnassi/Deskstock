@@ -1,0 +1,124 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold" routerLink="/">
+      <i class="fas fa-chair me-2"></i>
+      School Furniture
+    </a>
+
+    <!-- Mobile toggle button -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navigation items -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Left side navigation -->
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/products" routerLinkActive="active">
+            Products
+          </a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown">
+            Categories
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" routerLink="/products" [queryParams]="{category: 'DESKS'}">Desks</a></li>
+            <li><a class="dropdown-item" routerLink="/products" [queryParams]="{category: 'CHAIRS'}">Chairs</a></li>
+            <li><a class="dropdown-item" routerLink="/products" [queryParams]="{category: 'TABLES'}">Tables</a></li>
+            <li><a class="dropdown-item" routerLink="/products" [queryParams]="{category: 'STORAGE'}">Storage</a></li>
+            <li><a class="dropdown-item" routerLink="/products" [queryParams]="{category: 'ACCESSORIES'}">Accessories</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <!-- Search bar -->
+      <form class="d-flex me-3" (ngSubmit)="onSearch()">
+        <input 
+          class="form-control me-2" 
+          type="search" 
+          placeholder="Search products..." 
+          [(ngModel)]="searchQuery"
+          name="search">
+        <button class="btn btn-outline-light" type="submit">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
+
+      <!-- Right side navigation -->
+      <ul class="navbar-nav">
+        <!-- Cart -->
+        <li class="nav-item dropdown">
+          <div class="cart-container d-flex align-items-center">
+            <!-- Cart Icon with Dropdown Toggle -->
+            <a class="nav-link position-relative cart-toggle me-2" 
+               (click)="toggleCartDropdown()" 
+               style="cursor: pointer;"
+               [class.active]="isCartDropdownOpen"
+               title="View cart items">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="cart-badge" 
+                    *ngIf="cartSummary.totalItems > 0"
+                    [class.animate-bounce]="shouldAnimateCartBadge()"
+                    [class.cart-badge-pulse]="cartSummary.totalItems > 0">
+                {{ cartSummary.totalItems }}
+              </span>
+            </a>
+            <!-- Go to Cart Page Button -->
+            <a class="nav-link cart-page-link" 
+               routerLink="/cart"
+               style="cursor: pointer;"
+               title="Go to cart page">
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </li>
+
+        <!-- User menu -->
+        <li class="nav-item dropdown" *ngIf="isAuthenticated; else guestMenu">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-user me-1"></i>
+            {{ currentUser?.firstName || currentUser?.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" (click)="navigateToProfile()">Profile</a></li>
+            <li *ngIf="currentUser?.role === 'ADMIN'">
+              <a class="dropdown-item" routerLink="/admin">Admin Panel</a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" (click)="onLogout()">Logout</a></li>
+          </ul>
+        </li>
+
+        <!-- Guest menu -->
+        <ng-template #guestMenu>
+          <li class="nav-item">
+            <a class="nav-link" (click)="navigateToLogin()" style="cursor: pointer;">
+              <i class="fas fa-sign-in-alt me-1"></i>
+              Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" (click)="navigateToRegister()" style="cursor: pointer;">
+              <i class="fas fa-user-plus me-1"></i>
+              Register
+            </a>
+          </li>
+        </ng-template>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Cart Dropdown -->
+<app-cart-dropdown 
+  [isOpen]="isCartDropdownOpen"
+  (closeDropdown)="closeCartDropdown()">
+</app-cart-dropdown>

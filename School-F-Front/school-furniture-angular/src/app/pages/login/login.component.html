@@ -1,0 +1,109 @@
+<div class="login-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="login-card">
+          <!-- Header -->
+          <div class="login-header text-center mb-4">
+            <i class="fas fa-chair login-icon mb-3"></i>
+            <h2 class="login-title">Welcome Back</h2>
+            <p class="login-subtitle text-muted">Sign in to your account</p>
+          </div>
+
+          <!-- Error Message -->
+          <div class="alert alert-danger" *ngIf="errorMessage" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+
+          <!-- Login Form -->
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+            <!-- Email Field -->
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="fas fa-envelope me-2"></i>
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [class.is-invalid]="isFieldInvalid('email')"
+                formControlName="email"
+                placeholder="Enter your email"
+                autocomplete="email">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                {{ getFieldError('email') }}
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+              <label for="password" class="form-label">
+                <i class="fas fa-lock me-2"></i>
+                Password
+              </label>
+              <div class="input-group">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('password')"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                {{ getFieldError('password') }}
+              </div>
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="row mb-3">
+              <div class="col-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="rememberMe">
+                  <label class="form-check-label" for="rememberMe">
+                    Remember me
+                  </label>
+                </div>
+              </div>
+              <div class="col-6 text-end">
+                <a href="#" class="text-decoration-none small">Forgot password?</a>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mb-3">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i *ngIf="!isLoading" class="fas fa-sign-in-alt me-2"></i>
+                {{ isLoading ? 'Signing in...' : 'Sign In' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- Register Link -->
+          <div class="text-center">
+            <p class="mb-0">
+              Don't have an account?
+              <a (click)="navigateToRegister()" class="text-decoration-none ms-1" style="cursor: pointer;">
+                Create one here
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

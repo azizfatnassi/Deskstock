@@ -1,0 +1,625 @@
+// Modern Color Variables - Using CSS Custom Properties
+:host {
+  --primary-color: var(--primary-color);
+  --secondary-color: var(--secondary-color);
+  --accent-color: var(--accent-color);
+  --danger-color: var(--danger-color);
+  --white-glass: var(--white-glass);
+  --white-glass-light: var(--white-glass-light);
+  --white-glass-medium: var(--white-glass-medium);
+  --border-glass: var(--border-glass);
+  --border-light: var(--border-light);
+  --border-medium: var(--border-medium);
+  --text-primary: var(--text-primary);
+  --text-secondary: var(--text-secondary);
+  --text-muted: var(--text-muted);
+  --shadow-glass: var(--shadow-glass);
+  --shadow-glass-hover: var(--shadow-glass-hover);
+  --blur-light: var(--blur-light);
+  --blur-medium: var(--blur-medium);
+  --blur-strong: var(--blur-strong);
+}
+
+// Modern Cart Backdrop with Glassmorphism
+.cart-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(237, 100, 166, 0.1));
+  backdrop-filter: var(--blur-light);
+  z-index: 1040;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// Modern Cart Dropdown Panel with Glassmorphism
+.cart-dropdown {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 450px;
+  height: 100vh;
+  background: var(--white-glass);
+  backdrop-filter: var(--blur-strong);
+  border-left: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-glass-hover);
+  z-index: 1050;
+  transform: translateX(100%);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  
+  &.show {
+    transform: translateX(0);
+  }
+  
+  @media (max-width: 576px) {
+    width: 100%;
+    right: 0;
+  }
+}
+
+// Modern Cart Header with Enhanced Glassmorphism
+.cart-header {
+  padding: 2rem;
+  border-bottom: 1px solid var(--border-glass);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--white-glass-light);
+    backdrop-filter: var(--blur-light);
+    z-index: -1;
+  }
+  
+  .cart-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    i {
+      margin-right: 0.75rem;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+  }
+  
+  .btn-close-cart {
+    background: var(--white-glass-light);
+    backdrop-filter: var(--blur-light);
+    border: 1px solid var(--border-glass);
+    color: white;
+    font-size: 1.25rem;
+    padding: 0.75rem;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(90deg) scale(1.1);
+      box-shadow: var(--shadow-glass);
+    }
+  }
+  
+  .cart-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--white-glass-light);
+    backdrop-filter: var(--blur-light);
+    border-radius: 1rem;
+    border: 1px solid var(--border-glass);
+    
+    .items-count {
+      font-weight: 600;
+      opacity: 0.9;
+    }
+    
+    .total-price {
+      font-weight: 800;
+      font-size: 1.25rem;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Modern Cart Content with Custom Scrollbar
+.cart-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--white-glass-light);
+    border-radius: 1rem;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 1rem;
+    border: 2px solid var(--white-glass);
+    
+    &:hover {
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-color));
+    }
+  }
+}
+
+// Enhanced Loading State
+.cart-loading {
+  padding: 3rem 2rem;
+  
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 4px;
+    border-color: var(--primary-color) transparent var(--secondary-color) transparent;
+    animation: spin 1s linear infinite;
+  }
+  
+  p {
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 1rem;
+  }
+}
+
+// Enhanced Empty Cart State
+.empty-cart {
+  padding: 3rem 2rem;
+  
+  .empty-cart-icon {
+    font-size: 4rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0.7;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+  }
+  
+  .empty-cart-title {
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-cart-text {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+  
+  .btn {
+    border-radius: 2rem;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    border: none;
+    box-shadow: var(--shadow-glass);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glass-hover);
+    }
+  }
+}
+
+// Modern Cart Items with Glassmorphism
+.cart-items {
+  padding: 1rem;
+}
+
+.cart-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  background: var(--white-glass-light);
+  backdrop-filter: var(--blur-light);
+  border: 1px solid var(--border-glass);
+  border-radius: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    background: var(--white-glass-medium);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glass);
+    border-color: var(--border-medium);
+  }
+  
+  &.updating {
+    opacity: 0.7;
+    pointer-events: none;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--white-glass);
+      backdrop-filter: var(--blur-medium);
+      border-radius: 1.5rem;
+      z-index: 1;
+    }
+  }
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Item Image
+// Modern Item Image
+.item-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-right: 1.25rem;
+  flex-shrink: 0;
+  background: var(--white-glass-light);
+  border: 1px solid var(--border-glass);
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+// Enhanced Item Details
+.item-details {
+  flex: 1;
+  min-width: 0;
+  
+  .item-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .item-category {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.75px;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .item-price-quantity {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    
+    .item-price {
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 1rem;
+    }
+  }
+  
+  .item-total {
+    margin-top: 0.75rem;
+    text-align: right;
+    
+    strong {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+  }
+}
+
+// Modern Quantity Controls with Glassmorphism
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  background: var(--white-glass-light);
+  backdrop-filter: var(--blur-light);
+  border: 1px solid var(--border-glass);
+  border-radius: 2rem;
+  padding: 0.25rem;
+  
+  .btn-quantity {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+      transform: scale(1.1);
+      box-shadow: var(--shadow-glass);
+    }
+    
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+  
+  .quantity-display {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+}
+
+// Enhanced Item Actions
+.item-actions {
+  margin-left: 1rem;
+  
+  .btn-remove {
+    background: var(--white-glass-light);
+    backdrop-filter: var(--blur-light);
+    border: 1px solid var(--border-glass);
+    color: var(--text-muted);
+    padding: 0.75rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--danger-color), #ff6b6b);
+      color: white;
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: var(--shadow-glass);
+    }
+    
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Item Loading Overlay
+.item-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($white, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+// Modern Cart Footer with Glassmorphism
+.cart-footer {
+  padding: 2rem;
+  border-top: 1px solid var(--border-glass);
+  background: var(--white-glass-light);
+  backdrop-filter: var(--blur-medium);
+  
+  .cart-summary {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--white-glass-medium);
+    backdrop-filter: var(--blur-light);
+    border: 1px solid var(--border-glass);
+    border-radius: 1.5rem;
+    
+    .summary-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+    
+    .summary-total {
+      font-weight: 800;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+  
+  .cart-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    
+    .btn {
+      border-radius: 2rem;
+      font-weight: 700;
+      padding: 1rem 1.5rem;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.6s ease;
+      }
+      
+      &:hover::before {
+        left: 100%;
+      }
+      
+      &.btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        border: none;
+        box-shadow: var(--shadow-glass);
+        
+        &:hover {
+          background: linear-gradient(135deg, var(--primary-light), var(--secondary-color));
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-glass-hover);
+        }
+      }
+      
+      &.btn-outline-secondary {
+        background: var(--white-glass-light);
+        backdrop-filter: var(--blur-light);
+        border: 2px solid var(--border-medium);
+        color: var(--text-secondary);
+        
+        &:hover {
+          background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+          border-color: var(--secondary-color);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-glass);
+        }
+      }
+    }
+  }
+  
+  .btn-link {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--danger-color);
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+      transform: translateY(-1px);
+    }
+    
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Animations
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .cart-dropdown {
+    width: 100%;
+  }
+  
+  .cart-header {
+    padding: 1rem;
+  }
+  
+  .cart-item {
+    padding: 1rem;
+  }
+  
+  .item-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .cart-footer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .item-details {
+    .item-name {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .quantity-controls {
+    .btn-quantity {
+      width: 24px;
+      height: 24px;
+      font-size: 0.7rem;
+    }
+    
+    .quantity-display {
+      min-width: 30px;
+      font-size: 0.85rem;
+    }
+  }
+}

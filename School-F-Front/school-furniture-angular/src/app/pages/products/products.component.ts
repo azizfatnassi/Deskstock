@@ -1,0 +1,267 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
+import { Product, ProductResponse, PagedResponse, Category, Color, CategoryResponse, ColorResponse } from '../../models/product.model';
+import { CartItemRequest } from '../../models/cart.model';
+
+@Component({
+  selector: 'app-products',
+  templateUrl: './products.component.html',
+  styleUrls: ['./products.component.scss']
+})
+export class ProductsComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
+  products: ProductResponse[] = [];
+  categories: CategoryResponse[] = [];
+  colors: ColorResponse[] = [];
+  
+  // Search and filter parameters
+  searchQuery: string = '';
+  selectedCategory: string = '';
+  selectedColor: string = '';
+  minPrice: number | null = null;
+  maxPrice: number | null = null;
+  sortBy: string = 'name';
+  sortDir: string = 'asc';
+  page: number = 0;
+  size: number = 12;
+  
+  // Pagination
+  totalElements = 0;
+  totalPages = 0;
+  currentPage = 0;
+  
+  // UI state
+  loading = false;
+  error: string | null = null;
+  addingToCart: { [productId: number]: boolean } = {};
+  
+  constructor(
+    private productService: ProductService,
+    private cartService: CartService,
+    public authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+  
+  ngOnInit(): void {
+    console.log('ProductsComponent initialized');
+    this.loadCategories();
+    this.loadColors();
+    this.handleRouteParams();
+    this.searchProducts();
+  }
+  
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
+  private handleRouteParams(): void {
+    this.route.queryParams.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(params => {
+      if (params['category']) {
+        // Find category by name and set selectedCategory
+        const category = this.categories.find(c => c.name.toLowerCase() === params['category'].toLowerCase());
+        if (category) {
+          this.selectedCategory = category.name;
+        }
+      }
+      if (params['search']) {
+        this.searchQuery = params['search'];
+      }
+      this.searchProducts();
+    });
+  }
+  
+  private loadCategories(): void {
+    this.productService.getAllCategories().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (categories: CategoryResponse[]) => {
+        this.categories = categories;
+      },
+      error: (error: any) => {
+        console.error('Error loading categories:', error);
+      }
+    });
+  }
+  
+  private loadColors(): void {
+    this.productService.getAllColors().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (colors: ColorResponse[]) => {
+        this.colors = colors;
+      },
+      error: (error: any) => {
+        console.error('Error loading colors:', error);
+      }
+    });
+  }
+  
+  searchProducts(): void {
+    this.loading = true;
+    this.error = null;
+    
+    // Use the new advanced filter method that combines all filters
+    const observable = this.productService.searchProductsWithFilters(
+      this.searchQuery || undefined,
+      this.selectedCategory || undefined,
+      this.selectedColor || undefined,
+      this.minPrice || undefined,
+      this.maxPrice || undefined,
+      this.page,
+      this.size,
+      this.sortBy,
+      this.sortDir
+    );
+    
+    observable.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response: PagedResponse<ProductResponse>) => {
+        console.log('Products loaded:', response.content);
+        this.products = response.content;
+        this.totalElements = response.totalElements;
+        this.totalPages = response.totalPages;
+        this.currentPage = response.number;
+        this.loading = false;
+        this.error = null;
+      },
+      error: (error: any) => {
+        this.error = 'Error loading products. Please try again.';
+        this.loading = false;
+        console.error('Error searching products:', error);
+      }
+    });
+  }
+  
+  onSearchChange(keyword: string): void {
+    this.searchQuery = keyword;
+    this.page = 0;
+    this.searchProducts();
+  }
+  
+  onCategoryChange(category: string): void {
+    this.selectedCategory = category;
+    this.page = 0;
+    this.searchProducts();
+  }
+  
+  onColorChange(color: string): void {
+    this.selectedColor = color;
+    this.page = 0;
+    this.searchProducts();
+  }
+  
+  onPriceRangeChange(minPrice: number | null, maxPrice: number | null): void {
+    this.minPrice = minPrice;
+    this.maxPrice = maxPrice;
+    this.page = 0;
+    this.searchProducts();
+  }
+  
+  onPageChange(page: number): void {
+    this.page = page;
+    this.searchProducts();
+  }
+  
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.selectedCategory = '';
+    this.selectedColor = '';
+    this.minPrice = null;
+    this.maxPrice = null;
+    this.page = 0;
+    this.searchProducts();
+  }
+  
+  viewProduct(productId: number): void {
+    this.router.navigate(['/products', productId]);
+  }
+
+  onSortChange(sortBy: string, sortDirection: string): void {
+    this.sortBy = sortBy;
+    this.sortDir = sortDirection;
+    this.page = 0;
+    this.currentPage = 0;
+    this.searchProducts();
+  }
+
+
+
+  addToCart(product: ProductResponse): void {
+    console.log('addToCart called with:', product);
+    
+    if (!product || !product.id) {
+      console.log('No product or product ID');
+      return;
+    }
+    
+    if (product.stockQuantity <= 0) {
+      console.log('No stock available');
+      return;
+    }
+    
+    if (this.addingToCart[product.id]) {
+      console.log('Already adding to cart');
+      return;
+    }
+
+    // Check if user is authenticated
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      alert('Please log in to add items to cart');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.addingToCart[product.id] = true;
+
+    const cartItem: CartItemRequest = {
+      productId: product.id,
+      quantity: 1
+    };
+
+    this.cartService.addToCart(cartItem).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => {
+        this.addingToCart[product.id] = false;
+        // Show success message or animation
+        this.showAddToCartSuccess(product.name);
+      },
+      error: (error) => {
+        this.addingToCart[product.id] = false;
+        console.error('Error adding to cart:', error);
+        // Show error message
+        this.showAddToCartError();
+      }
+    });
+  }
+
+  private showAddToCartSuccess(productName: string): void {
+    // You can implement a toast notification here
+    console.log(`${productName} added to cart successfully!`);
+  }
+
+  private showAddToCartError(): void {
+    // You can implement a toast notification here
+    console.error('Failed to add item to cart. Please try again.');
+  }
+
+  getPageNumbers(): number[] {
+    const pages = [];
+    for (let i = 0; i < this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+}

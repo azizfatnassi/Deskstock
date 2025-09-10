@@ -1,0 +1,202 @@
+<div class="register-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="register-card">
+          <!-- Header -->
+          <div class="register-header text-center mb-4">
+            <i class="fas fa-chair register-icon mb-3"></i>
+            <h2 class="register-title">Create Account</h2>
+            <p class="register-subtitle text-muted">Join our school furniture community</p>
+          </div>
+
+          <!-- Success Message -->
+          <div class="alert alert-success" *ngIf="successMessage" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ successMessage }}
+          </div>
+
+          <!-- Error Message -->
+          <div class="alert alert-danger" *ngIf="errorMessage" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ errorMessage }}
+          </div>
+
+          <!-- Registration Form -->
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+            <!-- Name Fields Row -->
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="firstName" class="form-label">
+                    <i class="fas fa-user me-2"></i>
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('firstName')"
+                    formControlName="firstName"
+                    placeholder="Enter your first name"
+                    autocomplete="given-name">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('firstName')">
+                    {{ getFieldError('firstName') }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="lastName" class="form-label">
+                    <i class="fas fa-user me-2"></i>
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    class="form-control"
+                    [class.is-invalid]="isFieldInvalid('lastName')"
+                    formControlName="lastName"
+                    placeholder="Enter your last name"
+                    autocomplete="family-name">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('lastName')">
+                    {{ getFieldError('lastName') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="fas fa-envelope me-2"></i>
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [class.is-invalid]="isFieldInvalid('email')"
+                formControlName="email"
+                placeholder="Enter your email address"
+                autocomplete="email">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                {{ getFieldError('email') }}
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+              <label for="password" class="form-label">
+                <i class="fas fa-lock me-2"></i>
+                Password
+              </label>
+              <div class="input-group">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('password')"
+                  formControlName="password"
+                  placeholder="Create a strong password"
+                  autocomplete="new-password">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              
+              <!-- Password Strength Indicator -->
+              <div class="password-strength mt-2" *ngIf="registerForm.get('password')?.value">
+                <div class="strength-bar">
+                  <div class="strength-fill" [class]="'strength-' + getPasswordStrength()"></div>
+                </div>
+                <small class="strength-text" [class]="'text-' + getPasswordStrength()">
+                  Password strength: {{ getPasswordStrength() | titlecase }}
+                </small>
+              </div>
+              
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                {{ getFieldError('password') }}
+              </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label">
+                <i class="fas fa-lock me-2"></i>
+                Confirm Password
+              </label>
+              <div class="input-group">
+                <input
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  id="confirmPassword"
+                  class="form-control"
+                  [class.is-invalid]="isFieldInvalid('confirmPassword') || registerForm.errors?.['passwordMismatch']"
+                  formControlName="confirmPassword"
+                  placeholder="Confirm your password"
+                  autocomplete="new-password">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="toggleConfirmPasswordVisibility()"
+                  [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'">
+                  <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('confirmPassword') || registerForm.errors?.['passwordMismatch']">
+                {{ getFieldError('confirmPassword') }}
+              </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="mb-4">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="agreeToTerms"
+                  formControlName="agreeToTerms"
+                  [class.is-invalid]="isFieldInvalid('agreeToTerms')">
+                <label class="form-check-label" for="agreeToTerms">
+                  I agree to the 
+                  <a href="#" class="text-decoration-none">Terms of Service</a> 
+                  and 
+                  <a href="#" class="text-decoration-none">Privacy Policy</a>
+                </label>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('agreeToTerms')">
+                  {{ getFieldError('agreeToTerms') }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mb-3">
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+                [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i *ngIf="!isLoading" class="fas fa-user-plus me-2"></i>
+                {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- Login Link -->
+          <div class="text-center">
+            <p class="mb-0">
+              Already have an account?
+              <a (click)="navigateToLogin()" class="text-decoration-none ms-1" style="cursor: pointer;">
+                Sign in here
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

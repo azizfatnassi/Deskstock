@@ -1,0 +1,279 @@
+// Modern Footer with Glassmorphism Design
+:host {
+  --footer-bg: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+  --footer-overlay: rgba(255, 255, 255, 0.1);
+  --footer-border: rgba(255, 255, 255, 0.2);
+  --footer-text: rgba(255, 255, 255, 0.9);
+  --footer-text-muted: rgba(255, 255, 255, 0.7);
+  --footer-text-light: rgba(255, 255, 255, 0.6);
+  --footer-hover: rgba(255, 255, 255, 0.15);
+  --footer-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+  position: relative;
+  background: var(--footer-bg);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--footer-border);
+  box-shadow: var(--footer-shadow);
+  overflow: hidden;
+  
+  // Animated background overlay
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+    animation: backgroundShift 20s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// Company Info Section
+.col-lg-4 {
+  h5 {
+    color: white;
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    
+    i {
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      margin-right: 0.75rem;
+      font-size: 1.6rem;
+    }
+  }
+  
+  p {
+    color: var(--footer-text-muted);
+    line-height: 1.7;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+}
+
+// Social Media Links
+.d-flex {
+  gap: 1rem;
+  
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--footer-border);
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-5px) scale(1.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      
+      &:nth-child(1) { color: #1877f2; } // Facebook
+      &:nth-child(2) { color: #1da1f2; } // Twitter
+      &:nth-child(3) { color: #e4405f; } // Instagram
+      &:nth-child(4) { color: #0077b5; } // LinkedIn
+    }
+  }
+}
+
+// Section Headers
+h6 {
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 30px;
+    height: 3px;
+    background: linear-gradient(90deg, #ffd700, transparent);
+    border-radius: 2px;
+  }
+}
+
+// Navigation Links
+.list-unstyled {
+  li {
+    margin-bottom: 0.75rem;
+    
+    a {
+      color: var(--footer-text-light);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0.5rem 0;
+      display: inline-block;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #ffd700, #ffed4e);
+        transition: width 0.3s ease;
+      }
+      
+      &:hover {
+        color: white;
+        transform: translateX(8px);
+        
+        &::before {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+// Contact Info Icons
+.fas {
+  color: #ffd700;
+  margin-right: 0.75rem;
+  width: 18px;
+  text-align: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+// Divider
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--footer-border), transparent);
+  margin: 3rem 0 2rem 0;
+  opacity: 0.8;
+}
+
+// Copyright Section
+.row.align-items-center {
+  padding-top: 1rem;
+  
+  p {
+    color: var(--footer-text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  
+  a {
+    color: var(--footer-text-light);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: #ffd700;
+      transition: width 0.3s ease;
+    }
+    
+    &:hover {
+      color: white;
+      
+      &::after {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes backgroundShift {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(-20px) translateY(-10px);
+  }
+  50% {
+    transform: translateX(20px) translateY(10px);
+  }
+  75% {
+    transform: translateX(-10px) translateY(20px);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  footer {
+    padding: 3rem 0 2rem 0;
+  }
+  
+  .col-lg-4, .col-lg-2 {
+    margin-bottom: 2.5rem;
+    text-align: center;
+  }
+  
+  .d-flex {
+    justify-content: center;
+  }
+  
+  h6::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .text-md-end {
+    text-align: center !important;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .col-lg-4 h5 {
+    font-size: 1.3rem;
+  }
+  
+  .d-flex a {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+  
+  hr {
+    margin: 2rem 0 1.5rem 0;
+  }
+}

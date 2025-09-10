@@ -1,0 +1,124 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-lg-3 col-md-4 mb-4">
+      <div class="filters-sidebar">
+        <h5 class="mb-3">Filters</h5>
+        
+        <!-- Search -->
+        <div class="filter-section mb-4">
+          <label class="form-label">Search Products</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Search by name or description..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange($event)">
+        </div>
+        
+        <!-- Category Filter -->
+        <div class="filter-section mb-4">
+          <label class="form-label">Category</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="selectedCategory"
+            (ngModelChange)="onCategoryChange($event)">
+            <option value="">All Categories</option>
+            <option *ngFor="let category of categories" [value]="category.name">{{category.displayName}}</option>
+          </select>
+        </div>
+        
+        <!-- Color Filter -->
+        <div class="filter-section mb-4">
+          <label class="form-label">Color</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="selectedColor"
+            (ngModelChange)="onColorChange($event)">
+            <option value="">All Colors</option>
+            <option *ngFor="let color of colors" [value]="color.name">{{color.displayName}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="col-lg-9 col-md-8">
+      <!-- Sort and Results Info -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="results-info">
+          <span class="text-muted">Showing {{products.length}} products</span>
+        </div>
+        <div class="sort-controls">
+          <select class="form-select" style="width: auto;" [(ngModel)]="sortBy" (ngModelChange)="onSortChange($event, 'asc')">
+            <option value="name">Sort by Name</option>
+            <option value="price">Sort by Price</option>
+            <option value="category">Sort by Category</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading products...</p>
+      </div>
+      
+
+      
+      <!-- Products Grid -->
+      <div *ngIf="!loading" class="row">
+        <div *ngFor="let product of products" class="col-xl-4 col-lg-6 col-md-6 mb-4">
+          <div class="card product-card h-100 shadow-sm">
+            <div class="card-img-container position-relative">
+              <img [src]="product.imageUrl || 'assets/images/placeholder.jpg'" 
+                   class="card-img-top product-image" 
+                   [alt]="product.name">
+              <div class="product-overlay">
+                <button class="btn btn-outline-light btn-sm quick-view-btn">
+                  Quick View
+                </button>
+              </div>
+            </div>
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title product-name">{{product.name}}</h6>
+              <p class="card-text product-description text-muted small">{{product.description}}</p>
+              
+              <div class="product-details mt-auto">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-secondary">{{product.category}}</span>
+                  <span class="badge bg-info">{{product.color}}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="product-price">
+                    <span class="price">${{product.price}}</span>
+                  </div>
+                  <div class="product-stock">
+                    <span class="stock-count">{{product.stockQuantity}} in stock</span>
+                  </div>
+                </div>
+                <button class="btn btn-primary w-100 mt-2 add-to-cart-btn"
+                        (click)="addToCart(product)">
+                  <span *ngIf="!addingToCart[product.id] && authService.isAuthenticated()">Add to Cart</span>
+                  <span *ngIf="!addingToCart[product.id] && !authService.isAuthenticated()">Login to Add</span>
+                  <span *ngIf="addingToCart[product.id]">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Adding...
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- No Products Found -->
+      <div *ngIf="!loading && products.length === 0" class="text-center py-5">
+        <h4>No products found</h4>
+        <p class="text-muted">Try adjusting your filters or search terms.</p>
+      </div>
+    </div>
+  </div>
+</div>
