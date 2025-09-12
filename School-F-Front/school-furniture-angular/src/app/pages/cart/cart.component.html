@@ -19,7 +19,7 @@
     <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-container">
       <div class="spinner-border text-primary" role="status">
-        <span class="sr-only">Loading...</span>
+        <span class="visually-hidden">Loading...</span>
       </div>
       <p class="loading-text">Loading your cart...</p>
     </div>
@@ -59,7 +59,7 @@
 
             <div class="cart-item" 
                  *ngFor="let item of cartItems; trackBy: trackByProductId"
-                 [class.updating]="isItemUpdating(item.product.id)">
+                 [class.updating]="isItemUpdating(item.product.productId)">
               
               <!-- Product Image -->
               <div class="item-image">
@@ -88,24 +88,25 @@
                   <button 
                     class="btn btn-outline-secondary btn-sm quantity-btn"
                     (click)="updateQuantity(item, item.quantity - 1)"
-                    [disabled]="isItemUpdating(item.product.id) || item.quantity <= 1"
+                    [disabled]="isItemUpdating(item.product.productId) || item.quantity <= 1"
                     type="button">
                     <i class="fas fa-minus"></i>
                   </button>
                   
                   <input 
+                    #qtyInput
                     type="number" 
                     class="form-control quantity-input"
                     [value]="item.quantity"
-                    (change)="updateQuantity(item, +$any($event.target).value)"
-                    [disabled]="isItemUpdating(item.product.id)"
+                    [disabled]="isItemUpdating(item.product.productId)"
                     min="1"
-                    max="99">
+                    max="99"
+                    (input)="onQuantityInput(item, $event)">
                   
                   <button 
                     class="btn btn-outline-secondary btn-sm quantity-btn"
                     (click)="updateQuantity(item, item.quantity + 1)"
-                    [disabled]="isItemUpdating(item.product.id)"
+                    [disabled]="isItemUpdating(item.product.productId)"
                     type="button">
                     <i class="fas fa-plus"></i>
                   </button>
@@ -125,7 +126,7 @@
                 <button 
                   class="btn btn-outline-danger btn-sm remove-btn"
                   (click)="removeItem(item)"
-                  [disabled]="isItemUpdating(item.product.id)"
+                  [disabled]="isItemUpdating(item.product.productId)"
                   type="button"
                   title="Remove item">
                   <i class="fas fa-trash"></i>
@@ -133,7 +134,7 @@
               </div>
 
               <!-- Loading Overlay -->
-              <div *ngIf="isItemUpdating(item.product.id)" class="item-loading-overlay">
+              <div *ngIf="isItemUpdating(item.product.productId)" class="item-loading-overlay">
                 <div class="spinner-border spinner-border-sm text-primary" role="status">
                   <span class="sr-only">Updating...</span>
                 </div>
@@ -148,7 +149,7 @@
             <h4>Order Summary</h4>
             
             <div class="summary-row">
-              <span>Items ({{ cartSummary.totalItems }}):</span>
+              <span>Items {{ cartSummary.totalItems }}:</span>
               <span>${{ cartSummary.totalPrice | number:'1.2-2' }}</span>
             </div>
             
@@ -159,7 +160,7 @@
             
             <div class="summary-row">
               <span>Tax:</span>
-              <span>${{ (cartSummary.totalPrice * 0.08) | number:'1.2-2' }}</span>
+              <span>${{ taxAmount | number:'1.2-2' }}</span>
             </div>
             
             <hr>
@@ -167,7 +168,7 @@
             <div class="summary-row total-row">
               <strong>
                 <span>Total:</span>
-                <span>${{ (cartSummary.totalPrice * 1.08) | number:'1.2-2' }}</span>
+                <span>${{ totalWithTax | number:'1.2-2' }}</span>
               </strong>
             </div>
 

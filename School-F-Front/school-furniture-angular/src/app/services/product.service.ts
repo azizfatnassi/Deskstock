@@ -107,10 +107,12 @@ export class ProductService {
       params = params.set('query', query.trim());
     }
     if (category && category.trim()) {
-      params = params.set('category', category.trim());
+      // Convert category string to uppercase to match Java enum
+      params = params.set('category', category.trim().toUpperCase());
     }
     if (color && color.trim()) {
-      params = params.set('color', color.trim());
+      // Convert color string to uppercase to match Java enum
+      params = params.set('color', color.trim().toUpperCase());
     }
     if (minPrice !== null && minPrice !== undefined) {
       params = params.set('minPrice', (minPrice ?? 0).toString());

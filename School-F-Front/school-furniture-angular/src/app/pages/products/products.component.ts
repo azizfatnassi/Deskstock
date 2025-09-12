@@ -50,11 +50,9 @@ export class ProductsComponent implements OnInit, OnDestroy {
   ) {}
   
   ngOnInit(): void {
-    console.log('ProductsComponent initialized');
+    this.handleRouteParams();
     this.loadCategories();
     this.loadColors();
-    this.handleRouteParams();
-    this.searchProducts();
   }
   
   ngOnDestroy(): void {
@@ -128,10 +126,18 @@ export class ProductsComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response: PagedResponse<ProductResponse>) => {
         console.log('Products loaded:', response.content);
-        this.products = response.content;
-        this.totalElements = response.totalElements;
-        this.totalPages = response.totalPages;
-        this.currentPage = response.number;
+        if (response && response.content) {
+          this.products = response.content;
+          this.totalElements = response.totalElements;
+          this.totalPages = response.totalPages;
+          this.currentPage = response.number;
+        } else {
+          console.error('Invalid response format:', response);
+          this.products = [];
+          this.totalElements = 0;
+          this.totalPages = 0;
+          this.currentPage = 0;
+        }
         this.loading = false;
         this.error = null;
       },
@@ -139,6 +145,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
         this.error = 'Error loading products. Please try again.';
         this.loading = false;
         console.error('Error searching products:', error);
+        this.products = [];
       }
     });
   }
@@ -187,9 +194,9 @@ export class ProductsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/products', productId]);
   }
 
-  onSortChange(sortBy: string, sortDirection: string): void {
+  onSortChange(sortBy: string): void {
     this.sortBy = sortBy;
-    this.sortDir = sortDirection;
+    this.sortDir = 'asc'; // Default to ascending
     this.page = 0;
     this.currentPage = 0;
     this.searchProducts();
@@ -198,48 +205,77 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
 
   addToCart(product: ProductResponse): void {
-    console.log('addToCart called with:', product);
+    console.log('=== ADD TO CART DEBUG START ===');
+    console.log('Product:', product);
     
-    if (!product || !product.id) {
-      console.log('No product or product ID');
-      return;
-    }
-    
-    if (product.stockQuantity <= 0) {
-      console.log('No stock available');
-      return;
-    }
-    
-    if (this.addingToCart[product.id]) {
-      console.log('Already adding to cart');
+    if (!product || !product.productId) {
+      console.error('Invalid product:', product);
+      this.showAddToCartError();
       return;
     }
 
-    // Check if user is authenticated
+    if (product.stockQuantity <= 0) {
+      this.showAddToCartError();
+      return;
+    }
+
+    // Check if product is already being added to cart
+    if (this.addingToCart[product.productId]) {
+      console.log('Product already being added to cart');
+      return;
+    }
+
+    // Debug authentication state
+    console.log('=== AUTHENTICATION DEBUG ===');
     const currentUser = this.authService.getCurrentUser();
+    const isAuthenticated = this.authService.isAuthenticated();
+    const token = this.authService.getToken();
+    const userFromStorage = localStorage.getItem('current_user');
+    
+    console.log('Current user from auth service:', currentUser);
+    console.log('Is authenticated:', isAuthenticated);
+    console.log('Token from auth service:', token);
+    console.log('User from localStorage:', userFromStorage);
+    
+    if (userFromStorage) {
+      try {
+        const parsedUser = JSON.parse(userFromStorage);
+        console.log('Parsed user from localStorage:', parsedUser);
+      } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+      }
+    }
+    
     if (!currentUser) {
+      console.log('No current user, redirecting to login');
       alert('Please log in to add items to cart');
       this.router.navigate(['/login']);
       return;
     }
+    
+    console.log('User ID for cart:', currentUser.id);
+    console.log('=== AUTHENTICATION DEBUG END ===');
 
-    this.addingToCart[product.id] = true;
+    this.addingToCart[product.productId] = true;
 
     const cartItem: CartItemRequest = {
-      productId: product.id,
+      productId: product.productId,
       quantity: 1
     };
+
+    console.log('Cart item to be sent:', cartItem);
+    console.log('=== CALLING CART SERVICE ===');
 
     this.cartService.addToCart(cartItem).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
-        this.addingToCart[product.id] = false;
+        this.addingToCart[product.productId] = false;
         // Show success message or animation
         this.showAddToCartSuccess(product.name);
       },
       error: (error) => {
-        this.addingToCart[product.id] = false;
+        this.addingToCart[product.productId] = false;
         console.error('Error adding to cart:', error);
         // Show error message
         this.showAddToCartError();
@@ -248,13 +284,13 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
 
   private showAddToCartSuccess(productName: string): void {
-    // You can implement a toast notification here
-    console.log(`${productName} added to cart successfully!`);
+    // Simple user-visible notification per your request
+    alert('Product added to cart successfully!');
   }
 
   private showAddToCartError(): void {
-    // You can implement a toast notification here
-    console.error('Failed to add item to cart. Please try again.');
+    // Simple error alert
+    alert('Failed to add item to cart. Please try again.');
   }
 
   getPageNumbers(): number[] {

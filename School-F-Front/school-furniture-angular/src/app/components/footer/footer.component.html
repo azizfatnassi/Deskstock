@@ -23,8 +23,8 @@
       <div class="col-lg-2 col-md-6 mb-4">
         <h6 class="fw-bold mb-3">Quick Links</h6>
         <ul class="list-unstyled">
-          <li class="mb-2"><a routerLink="/" class="text-muted text-decoration-none">Home</a></li>
-          <li class="mb-2"><a routerLink="/products" class="text-muted text-decoration-none">Products</a></li>
+          <li class="mb-2"><a href="/" class="text-muted text-decoration-none">Home</a></li>
+            <li class="mb-2"><a href="/products" class="text-muted text-decoration-none">Products</a></li>
           <li class="mb-2"><a href="#" class="text-muted text-decoration-none">About Us</a></li>
           <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Contact</a></li>
         </ul>
@@ -35,22 +35,22 @@
         <h6 class="fw-bold mb-3">Categories</h6>
         <ul class="list-unstyled">
           <li class="mb-2">
-            <a routerLink="/products" [queryParams]="{category: 'DESKS'}" class="text-muted text-decoration-none">
+            <a href="/products?category=DESKS" class="text-muted text-decoration-none">
               Desks
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/products" [queryParams]="{category: 'CHAIRS'}" class="text-muted text-decoration-none">
+            <a href="/products?category=CHAIRS" class="text-muted text-decoration-none">
               Chairs
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/products" [queryParams]="{category: 'TABLES'}" class="text-muted text-decoration-none">
+            <a href="/products?category=TABLES" class="text-muted text-decoration-none">
               Tables
             </a>
           </li>
           <li class="mb-2">
-            <a routerLink="/products" [queryParams]="{category: 'STORAGE'}" class="text-muted text-decoration-none">
+            <a href="/products?category=STORAGE" class="text-muted text-decoration-none">
               Storage
             </a>
           </li>

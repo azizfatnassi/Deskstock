@@ -13,7 +13,7 @@ export interface Product {
 }
 
 export interface ProductResponse {
-  id: number;
+  productId: number;
   name: string;
   description: string;
   price: number;

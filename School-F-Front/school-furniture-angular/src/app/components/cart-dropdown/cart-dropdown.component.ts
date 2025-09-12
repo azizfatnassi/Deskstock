@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CartService } from '../../services/cart.service';
 import { CartItemResponse } from '../../models/cart.model';
-import { CartSummary } from '../../models/cart.model';
+import { CartSummary } from '../../models/cart-summary.model';
 import { Router } from '@angular/router';
 
 @Component({
@@ -31,19 +31,23 @@ export class CartDropdownComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to cart items
-    this.cartService.loadCartItems()
+    // Subscribe to cart items (reactive)
+    this.cartService.cartItems$
       .pipe(takeUntil(this.destroy$))
       .subscribe((items: CartItemResponse[]) => {
         this.cartItems = items;
       });
 
-    // Subscribe to cart summary
-    this.cartService.getCartSummary()
+    // Subscribe to cart summary (reactive)
+    this.cartService.cartSummary$
       .pipe(takeUntil(this.destroy$))
       .subscribe(summary => {
         this.cartSummary = summary;
       });
+
+    // Initial load to populate data when component opens
+    this.cartService.loadCartItems().pipe(takeUntil(this.destroy$)).subscribe();
+    this.cartService.getCartSummary().pipe(takeUntil(this.destroy$)).subscribe();
   }
 
   ngOnDestroy(): void {
@@ -57,31 +61,31 @@ export class CartDropdownComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.updatingItems[item.product.id] = true;
+    this.updatingItems[item.product.productId] = true;
     
-    this.cartService.updateCartItem(item.product.id, newQuantity)
+    this.cartService.updateCartItem(item.product.productId, newQuantity)
       .subscribe({
         next: () => {
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         },
         error: (error: any) => {
           console.error('Error updating cart item:', error);
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         }
       });
   }
 
   removeItem(item: CartItemResponse): void {
-    this.updatingItems[item.product.id] = true;
+    this.updatingItems[item.product.productId] = true;
     
-    this.cartService.removeFromCart(item.product.id)
+    this.cartService.removeFromCart(item.product.productId)
       .subscribe({
         next: () => {
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         },
         error: (error: any) => {
           console.error('Error removing cart item:', error);
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         }
       });
   }
@@ -131,6 +135,6 @@ export class CartDropdownComponent implements OnInit, OnDestroy {
   }
 
   trackByProductId(index: number, item: CartItemResponse): number {
-    return item.product.id;
+    return item.product.productId;
   }
 }

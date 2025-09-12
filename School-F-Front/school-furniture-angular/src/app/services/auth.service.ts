@@ -116,6 +116,7 @@ export class AuthService {
       role: response.role || 'USER'
     };
     
+    console.log('Auth success - User object created:', user);
     localStorage.setItem(this.userKey, JSON.stringify(user));
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);

@@ -193,4 +193,9 @@ export class RegisterComponent implements OnInit {
     if (score <= 4) return 'good';
     return 'strong';
   }
+
+  getPasswordStrengthDisplay(): string {
+    const strength = this.getPasswordStrength();
+    return strength.charAt(0).toUpperCase() + strength.slice(1);
+  }
 }

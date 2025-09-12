@@ -115,7 +115,7 @@
                   <div class="strength-fill" [class]="'strength-' + getPasswordStrength()"></div>
                 </div>
                 <small class="strength-text" [class]="'text-' + getPasswordStrength()">
-                  Password strength: {{ getPasswordStrength() | titlecase }}
+                  Password strength: {{ getPasswordStrengthDisplay() }}
                 </small>
               </div>
               

@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CartService } from '../../services/cart.service';
-import { CartItemResponse, CartSummary } from '../../models/cart.model';
+import { CartItemResponse } from '../../models/cart.model';
+import { CartSummary } from '../../models/cart-summary.model';
 import { Router } from '@angular/router';
 
 @Component({
@@ -15,6 +16,14 @@ export class CartComponent implements OnInit, OnDestroy {
   cartSummary: CartSummary = { totalItems: 0, totalPrice: 0 };
   isLoading = false;
   updatingItems: { [key: number]: boolean } = {};
+  
+  get taxAmount(): number {
+    return this.cartSummary.totalPrice * 0.08;
+  }
+  
+  get totalWithTax(): number {
+    return this.cartSummary.totalPrice * 1.08;
+  }
   
   private destroy$ = new Subject<void>();
 
@@ -61,37 +70,45 @@ export class CartComponent implements OnInit, OnDestroy {
       });
   }
 
+  onQuantityInput(item: CartItemResponse, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const newQuantity = parseInt(target.value, 10);
+    if (!isNaN(newQuantity)) {
+      this.updateQuantity(item, newQuantity);
+    }
+  }
+
   updateQuantity(item: CartItemResponse, newQuantity: number): void {
     if (newQuantity < 1) {
       this.removeItem(item);
       return;
     }
 
-    this.updatingItems[item.product.id] = true;
+    this.updatingItems[item.product.productId] = true;
     
-    this.cartService.updateCartItem(item.product.id, newQuantity)
+    this.cartService.updateCartItem(item.product.productId, newQuantity)
       .subscribe({
         next: () => {
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         },
         error: (error: any) => {
           console.error('Error updating cart item:', error);
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         }
       });
   }
 
   removeItem(item: CartItemResponse): void {
-    this.updatingItems[item.product.id] = true;
+    this.updatingItems[item.product.productId] = true;
     
-    this.cartService.removeFromCart(item.product.id)
+    this.cartService.removeFromCart(item.product.productId)
       .subscribe({
         next: () => {
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         },
         error: (error: any) => {
           console.error('Error removing cart item:', error);
-          this.updatingItems[item.product.id] = false;
+          this.updatingItems[item.product.productId] = false;
         }
       });
   }
@@ -128,6 +145,6 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   trackByProductId(index: number, item: CartItemResponse): number {
-    return item.product.id;
+    return item.product.productId;
   }
 }
