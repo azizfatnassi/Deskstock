@@ -17,7 +17,7 @@ A full-stack e-commerce platform for school furniture built with Angular fronten
 - User registration and login
 - Product catalog management
 - Shopping cart functionality
-- H2 in-memory database
+- MySQL database
 - Spring Security configuration
 - CORS support for frontend integration
 
