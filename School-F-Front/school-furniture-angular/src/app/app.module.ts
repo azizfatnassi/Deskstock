@@ -20,6 +20,7 @@ import { AdminLoginComponent } from './pages/admin/admin-login/admin-login.compo
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
 import { AdminProductsComponent } from './pages/admin/admin-products/admin-products.component';
 import { AdminStatisticsComponent } from './pages/admin/admin-statistics/admin-statistics.component';
+import { AdminUsersComponent } from './pages/admin/admin-users/admin-users.component';
 
 
 @NgModule({
@@ -36,7 +37,8 @@ import { AdminStatisticsComponent } from './pages/admin/admin-statistics/admin-s
     AdminLoginComponent,
     AdminDashboardComponent,
     AdminProductsComponent,
-    AdminStatisticsComponent
+    AdminStatisticsComponent,
+    AdminUsersComponent
   ],
   imports: [
     BrowserModule,

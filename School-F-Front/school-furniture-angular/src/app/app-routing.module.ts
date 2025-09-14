@@ -7,25 +7,23 @@ import { RegisterComponent } from './pages/register/register.component';
 import { CartComponent } from './pages/cart/cart.component';
 import { AdminLoginComponent } from './pages/admin/admin-login/admin-login.component';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
-import { AdminProductsComponent } from './pages/admin/admin-products/admin-products.component';
-import { AdminStatisticsComponent } from './pages/admin/admin-statistics/admin-statistics.component';
+// Removed separate admin component imports - now integrated into dashboard
 
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { AdminRedirectGuard } from './guards/admin-redirect.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
-  { path: 'products', component: ProductsComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
+  { path: 'home', component: HomeComponent, canActivate: [AdminRedirectGuard] },
+  { path: 'products', component: ProductsComponent, canActivate: [AdminRedirectGuard] },
+  { path: 'login', component: LoginComponent, canActivate: [AdminRedirectGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [AdminRedirectGuard] },
+  { path: 'cart', component: CartComponent, canActivate: [AuthGuard, AdminRedirectGuard] },
   
   // Admin routes
   { path: 'admin/login', component: AdminLoginComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AdminGuard] },
-  { path: 'admin/products', component: AdminProductsComponent, canActivate: [AdminGuard] },
-  { path: 'admin/statistics', component: AdminStatisticsComponent, canActivate: [AdminGuard] },
   { path: 'admin', redirectTo: '/admin/dashboard', pathMatch: 'full' },
 
   { path: '**', redirectTo: '/home' }

@@ -1,6 +1,18 @@
 <div class="admin-dashboard">
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-menu-toggle" (click)="toggleSidebar()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </button>
+  
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" [class.active]="sidebarOpen" (click)="closeSidebar()"></div>
+  
   <!-- Sidebar Navigation -->
-  <aside class="sidebar">
+  <aside class="sidebar" [class.open]="sidebarOpen">
     <div class="sidebar-header">
       <div class="logo">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -24,7 +36,18 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" (click)="navigateToProducts()">
+          <a class="nav-link" [class.active]="activeSection === 'users'" (click)="setActiveSection('users')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Users</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeSection === 'products'" (click)="setActiveSection('products')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
             </svg>
@@ -32,7 +55,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" (click)="navigateToStatistics()">
+          <a class="nav-link" [class.active]="activeSection === 'statistics'" (click)="setActiveSection('statistics')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="20" x2="18" y2="10"></line>
               <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -72,7 +95,7 @@
     <!-- Header -->
     <header class="content-header">
       <div class="header-left">
-        <h1>Dashboard Overview</h1>
+        <h1>{{ getSectionTitle() }}</h1>
         <p>Welcome back, {{ currentUser?.firstName }}! Here's what's happening with your store.</p>
       </div>
       <div class="header-right">
@@ -103,8 +126,8 @@
       <p>Loading dashboard data...</p>
     </div>
     
-    <!-- Dashboard Content -->
-    <div class="dashboard-content" *ngIf="!isLoading && !error">
+    <!-- Dashboard Overview Section -->
+    <div class="dashboard-content" *ngIf="!isLoading && !error && activeSection === 'overview'">
       <!-- Statistics Cards -->
       <div class="stats-grid">
         <div class="stat-card">
@@ -114,7 +137,7 @@
             </svg>
           </div>
           <div class="stat-content">
-            <div class="stat-number">{{ stats.totalProducts }}</div>
+            <div class="stat-number">{{ stats?.totalProducts }}</div>
             <div class="stat-label">Total Products</div>
           </div>
         </div>
@@ -126,7 +149,7 @@
             </svg>
           </div>
           <div class="stat-content">
-            <div class="stat-number">{{ stats.lowStockProducts }}</div>
+            <div class="stat-number">{{ stats?.lowStockItems }}</div>
             <div class="stat-label">Low Stock Items</div>
           </div>
         </div>
@@ -140,7 +163,7 @@
             </svg>
           </div>
           <div class="stat-content">
-            <div class="stat-number">{{ stats.outOfStockProducts }}</div>
+            <div class="stat-number">{{ stats?.outOfStockItems }}</div>
             <div class="stat-label">Out of Stock</div>
           </div>
         </div>
@@ -155,7 +178,7 @@
             </svg>
           </div>
           <div class="stat-content">
-            <div class="stat-number">{{ stats.totalUsers }}</div>
+            <div class="stat-number">{{ stats?.totalUsers || 0 }}</div>
             <div class="stat-label">Total Users</div>
           </div>
         </div>
@@ -165,7 +188,22 @@
       <div class="quick-actions">
         <h2>Quick Actions</h2>
         <div class="actions-grid">
-          <button class="action-card" (click)="navigateToProducts()">
+          <button class="action-card" (click)="setActiveSection('users')">
+            <div class="action-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="action-content">
+              <h3>Manage Users</h3>
+              <p>View, edit, and manage user accounts</p>
+            </div>
+          </button>
+          
+          <button class="action-card" (click)="setActiveSection('products')">
             <div class="action-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3"></circle>
@@ -178,7 +216,7 @@
             </div>
           </button>
           
-          <button class="action-card" (click)="navigateToProducts()">
+          <button class="action-card" (click)="setActiveSection('products')">
             <div class="action-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -191,7 +229,7 @@
             </div>
           </button>
           
-          <button class="action-card" (click)="navigateToStatistics()">
+          <button class="action-card" (click)="setActiveSection('statistics')">
             <div class="action-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -237,7 +275,7 @@
             </div>
           </div>
           
-          <div class="activity-item" *ngIf="stats.lowStockProducts > 0">
+          <div class="activity-item" *ngIf="stats?.lowStockItems && stats.lowStockItems > 0">
             <div class="activity-icon warning">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -247,7 +285,619 @@
             </div>
             <div class="activity-content">
               <div class="activity-title">Low Stock Alert</div>
-              <div class="activity-time">{{ stats.lowStockProducts }} items need restocking</div>
+              <div class="activity-time">{{ stats?.lowStockItems }} items need restocking</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Users Management Section -->
+    <div class="users-section" *ngIf="!isLoading && !error && activeSection === 'users'">
+      <div class="section-header">
+        <button class="back-btn" (click)="setActiveSection('overview')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5m7-7l-7 7 7 7"></path>
+          </svg>
+          Back to Overview
+        </button>
+        <div class="header-right">
+          <button class="refresh-btn" (click)="refreshUsers()" [disabled]="isLoadingUsers">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.spinning]="isLoadingUsers">
+              <polyline points="23,4 23,10 17,10"></polyline>
+              <polyline points="1,20 1,14 7,14"></polyline>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64l1.27 1.27m0 0A7 7 0 0 1 19.82 12M4.51 15a9 9 0 0 0 14.85 3.36l-1.27-1.27m0 0A7 7 0 0 1 4.18 12"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <!-- Success Alert -->
+       <div class="alert alert-success" *ngIf="successMessage">
+         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+           <polyline points="20,6 9,17 4,12"></polyline>
+         </svg>
+         {{ successMessage }}
+       </div>
+
+       <!-- Users Content -->
+       <div class="users-content" *ngIf="!isLoadingUsers">
+         <!-- Filters and Search -->
+         <div class="filters-section">
+           <div class="search-box">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               <circle cx="11" cy="11" r="8"></circle>
+               <path d="M21 21l-4.35-4.35"></path>
+             </svg>
+             <input 
+               type="text" 
+               placeholder="Search users by name or email..." 
+               [(ngModel)]="searchTerm"
+               (input)="onSearchChange()"
+             >
+           </div>
+           
+           <div class="filter-controls">
+             <select [(ngModel)]="selectedRole" (change)="onRoleFilterChange()" class="role-filter">
+               <option value="">All Roles</option>
+               <option value="ADMIN">Admin</option>
+               <option value="USER">User</option>
+             </select>
+             
+             <div class="results-info">
+               Showing {{ getPaginatedUsers().length }} of {{ filteredUsers.length }} users
+             </div>
+           </div>
+         </div>
+
+         <!-- Users Table -->
+         <div class="users-table-container">
+           <table class="user-table">
+             <thead>
+               <tr>
+                 <th>Avatar</th>
+                 <th>Name</th>
+                 <th>Email</th>
+                 <th>Role</th>
+                 <th>Status</th>
+                 <th>Created Date</th>
+                 <th>Actions</th>
+               </tr>
+             </thead>
+             <tbody>
+               <tr *ngFor="let user of getPaginatedUsers()" class="user-row">
+                 <td class="user-avatar">
+                   <div class="avatar-circle">
+                     {{ (user.name?.split(' ')[0]?.charAt(0) || '') + (user.name?.split(' ')[1]?.charAt(0) || '') }}
+                   </div>
+                 </td>
+                 <td class="user-name">
+                   <div class="name-container">
+                     <div class="full-name">{{ user.name }}</div>
+                     <div class="user-id">#{{ user.userId }}</div>
+                   </div>
+                 </td>
+                 <td>{{ user.email }}</td>
+                 <td>
+                   <span class="role-badge" [class]="'role-' + user.role.toLowerCase()">
+                     {{ user.role }}
+                   </span>
+                 </td>
+                 <td class="user-status">
+                   <span class="status-badge active">
+                     Active
+                   </span>
+                 </td>
+                 <td>{{ formatDate(user.createdAt) }}</td>
+                 <td>
+                   <div class="action-buttons">
+                     <button 
+                       class="btn btn-edit"
+                       (click)="editUser(user)"
+                       title="Edit User"
+                     >
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                       </svg>
+                       Edit
+                     </button>
+                     <button 
+                       class="btn btn-delete"
+                       (click)="deleteUser(user)"
+                       title="Delete User"
+                       [disabled]="user.role === 'ADMIN' && user.userId === currentUser?.userId"
+                     >
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <polyline points="3,6 5,6 21,6"></polyline>
+                         <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2,2h4a2,2,0,0,1,2,2v2"></path>
+                       </svg>
+                       Delete
+                     </button>
+                   </div>
+                 </td>
+               </tr>
+             </tbody>
+           </table>
+           
+           <!-- Empty State -->
+           <div class="empty-state" *ngIf="filteredUsers.length === 0">
+             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+               <circle cx="9" cy="7" r="4"></circle>
+               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+             </svg>
+             <h3>No users found</h3>
+             <p>No users match your current search criteria.</p>
+           </div>
+         </div>
+
+         <!-- Pagination -->
+         <div class="pagination" *ngIf="filteredUsers.length > pageSize">
+           <button 
+             class="pagination-btn"
+             [disabled]="currentPage === 1"
+             (click)="goToPage(currentPage - 1)"
+           >
+             Previous
+           </button>
+           
+           <div class="pagination-info">
+             Page {{ currentPage }} of {{ getTotalPages() }}
+           </div>
+           
+           <button 
+             class="pagination-btn"
+             [disabled]="currentPage === getTotalPages()"
+             (click)="goToPage(currentPage + 1)"
+           >
+             Next
+           </button>
+         </div>
+       </div>
+
+       <!-- Loading State for Users -->
+       <div class="loading-container" *ngIf="isLoadingUsers">
+         <div class="spinner"></div>
+         <p>Loading users...</p>
+       </div>
+    </div>
+    
+    <!-- Products Management Section -->
+    <div class="products-section" *ngIf="!isLoading && !error && activeSection === 'products'">
+      <div class="section-header">
+        <button class="back-btn" (click)="setActiveSection('overview')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5m7-7l-7 7 7 7"></path>
+          </svg>
+          Back to Overview
+        </button>
+        <button class="add-btn" (click)="showAddProductForm()">
+          Add New Product
+        </button>
+      </div>
+      <!-- Products Content -->
+       <div class="products-content" *ngIf="!isLoadingProducts">
+         <!-- Filters -->
+         <div class="filters">
+           <div class="search-box">
+             <input type="text" placeholder="Search products..." [(ngModel)]="productSearchTerm" (input)="onProductSearchChange()">
+           </div>
+           
+           <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+             <option value="">All Categories</option>
+             <option value="Chair">Chair</option>
+             <option value="Table">Table</option>
+             <option value="Desk">Desk</option>
+             <option value="Storage">Storage</option>
+             <option value="Lighting">Lighting</option>
+             <option value="Decor">Decor</option>
+           </select>
+           
+           <select [(ngModel)]="stockFilter" (change)="onStockFilterChange()">
+             <option value="all">All Stock</option>
+             <option value="in-stock">In Stock</option>
+             <option value="low-stock">Low Stock</option>
+             <option value="out-of-stock">Out of Stock</option>
+           </select>
+         </div>
+
+         <!-- Product List -->
+         <div class="products-container">
+           <div class="product-grid" *ngIf="filteredProducts.length > 0">
+             <div class="product-card" *ngFor="let product of getPaginatedProducts()">
+               <div class="product-image-container">
+                 <img class="product-image" [src]="product.imageUrl || '/assets/placeholder.jpg'" [alt]="product.name">
+                 <div class="product-overlay">
+                   <div class="quick-actions">
+                     <button class="quick-btn edit" (click)="editProduct(product)" title="Quick Edit">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                         <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                       </svg>
+                     </button>
+                     <button class="quick-btn view" (click)="viewProduct(product)" title="Quick View">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                         <circle cx="12" cy="12" r="3"></circle>
+                       </svg>
+                     </button>
+                   </div>
+                 </div>
+               </div>
+               
+               <div class="product-info">
+                 <div class="product-header">
+                   <h3 class="product-name">{{ product.name }}</h3>
+                   <span class="product-category">{{ product.category }}</span>
+                 </div>
+                 
+                 <p class="product-description">{{ product.description }}</p>
+                 
+                 <div class="product-details">
+                   <div class="price-container">
+                     <span class="product-price">${{ product.price }}</span>
+                   </div>
+                   
+                   <div class="stock-container">
+                     <span class="stock-badge" [class]="getStockStatus(product.stockQuantity)">
+                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                         <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                         <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                       </svg>
+                       {{ product.stockQuantity }} in stock
+                     </span>
+                   </div>
+                 </div>
+               </div>
+               
+               <div class="product-actions">
+                 <button class="btn btn-edit" (click)="editProduct(product)" title="Edit Product">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                     <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                   </svg>
+                   Edit
+                 </button>
+                 
+                 <button class="btn btn-delete" (click)="deleteProduct(product)" title="Delete Product">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <path d="M3 6h18"></path>
+                     <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                     <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                   </svg>
+                   Delete
+                 </button>
+               </div>
+             </div>
+           </div>
+           
+           <!-- Empty State -->
+           <div class="empty-state" *ngIf="filteredProducts.length === 0">
+             <h3>No products found</h3>
+             <p>Try adjusting your filters or start by adding your first product</p>
+             <button class="add-btn" (click)="showAddProductForm()">
+               Add First Product
+             </button>
+           </div>
+           
+           <!-- Pagination -->
+           <div class="pagination" *ngIf="getProductTotalPages() > 1">
+             <button class="page-btn" [disabled]="productCurrentPage === 1" (click)="goToProductPage(productCurrentPage - 1)">
+               Previous
+             </button>
+             <span class="page-info">Page {{ productCurrentPage }} of {{ getProductTotalPages() }}</span>
+             <button class="page-btn" [disabled]="productCurrentPage >= getProductTotalPages()" (click)="goToProductPage(productCurrentPage + 1)">
+               Next
+             </button>
+           </div>
+         </div>
+       </div>
+
+       <!-- Loading State for Products -->
+       <div class="loading-container" *ngIf="isLoadingProducts">
+         <div class="spinner"></div>
+         <p>Loading products...</p>
+       </div>
+    </div>
+    
+    <!-- Statistics Section -->
+    <div class="statistics-section" *ngIf="!isLoading && !error && activeSection === 'statistics'">
+      <div class="section-header">
+        <button class="back-btn" (click)="setActiveSection('overview')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5m7-7l-7 7 7 7"></path>
+          </svg>
+          Back to Overview
+        </button>
+      </div>
+      <div class="statistics-content">
+        <!-- Error Alert -->
+        <div *ngIf="error" class="alert alert-danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          {{ error }}
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+          <div class="spinner"></div>
+          <p>Loading statistics...</p>
+        </div>
+
+        <!-- Statistics Content -->
+        <div *ngIf="!isLoading && !error">
+          <!-- Metrics Grid -->
+          <div class="metrics-grid">
+            <div class="metric-card revenue">
+              <div class="metric-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
+              <div class="metric-content">
+                <h3>{{ stats?.totalRevenue | currency:'USD':'symbol':'1.0-0' }}</h3>
+                <p>Total Revenue</p>
+                <span class="metric-change positive" *ngIf="stats && stats.revenueChange != null && stats.revenueChange > 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="19" x2="12" y2="5"></line>
+                     <polyline points="5,12 12,5 19,12"></polyline>
+                   </svg>
+                   +{{ stats?.revenueChange }}%
+                 </span>
+                 <span class="metric-change negative" *ngIf="stats && stats.revenueChange != null && stats.revenueChange < 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="5" x2="12" y2="19"></line>
+                     <polyline points="19,12 12,19 5,12"></polyline>
+                   </svg>
+                   {{ stats?.revenueChange }}%
+                 </span>
+              </div>
+            </div>
+
+            <div class="metric-card orders">
+              <div class="metric-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+              </div>
+              <div class="metric-content">
+                <h3>{{ stats?.totalOrders | number }}</h3>
+                <p>Total Orders</p>
+                <span class="metric-change positive" *ngIf="stats && stats.ordersChange != null && stats.ordersChange > 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="19" x2="12" y2="5"></line>
+                     <polyline points="5,12 12,5 19,12"></polyline>
+                   </svg>
+                   +{{ stats?.ordersChange }}%
+                 </span>
+                 <span class="metric-change negative" *ngIf="stats && stats.ordersChange != null && stats.ordersChange < 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="5" x2="12" y2="19"></line>
+                     <polyline points="19,12 12,19 5,12"></polyline>
+                   </svg>
+                   {{ stats?.ordersChange }}%
+                 </span>
+              </div>
+            </div>
+
+            <div class="metric-card products">
+              <div class="metric-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+              <div class="metric-content">
+                <h3>{{ stats?.totalProducts | number }}</h3>
+                <p>Total Products</p>
+                <span class="metric-change positive" *ngIf="stats && stats.productsChange != null && stats.productsChange > 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="19" x2="12" y2="5"></line>
+                     <polyline points="5,12 12,5 19,12"></polyline>
+                   </svg>
+                   +{{ stats?.productsChange }}%
+                 </span>
+                 <span class="metric-change negative" *ngIf="stats && stats.productsChange != null && stats.productsChange < 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="5" x2="12" y2="19"></line>
+                     <polyline points="19,12 12,19 5,12"></polyline>
+                   </svg>
+                   {{ stats?.productsChange }}%
+                 </span>
+              </div>
+            </div>
+
+            <div class="metric-card customers">
+              <div class="metric-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <div class="metric-content">
+                <h3>{{ stats?.totalCustomers | number }}</h3>
+                <p>Total Customers</p>
+                <span class="metric-change positive" *ngIf="stats && stats.customersChange != null && stats.customersChange > 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="19" x2="12" y2="5"></line>
+                     <polyline points="5,12 12,5 19,12"></polyline>
+                   </svg>
+                   +{{ stats?.customersChange }}%
+                 </span>
+                 <span class="metric-change negative" *ngIf="stats && stats.customersChange != null && stats.customersChange < 0">
+                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                     <line x1="12" y1="5" x2="12" y2="19"></line>
+                     <polyline points="19,12 12,19 5,12"></polyline>
+                   </svg>
+                   {{ stats?.customersChange }}%
+                 </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="charts-section">
+            <div class="chart-container">
+              <div class="chart-header">
+                <h3>Revenue Trend</h3>
+                <div class="chart-controls">
+                  <select class="form-control" [(ngModel)]="selectedPeriod" (change)="onPeriodChange()">
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="90days">Last 90 Days</option>
+                    <option value="1year">Last Year</option>
+                  </select>
+                </div>
+              </div>
+              <div class="chart-content">
+                <canvas #revenueChart width="800" height="400"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-container orders-chart">
+              <div class="chart-header">
+                <h3>Orders Trend</h3>
+                <div class="chart-legend">
+                  <span class="legend-item orders">Orders</span>
+                </div>
+              </div>
+              <div class="chart-content">
+                <div class="simple-chart">
+                  <div class="chart-bars">
+                    <div 
+                      *ngFor="let value of ordersChartData; let i = index" 
+                      class="chart-bar orders"
+                      [style.height.%]="(value / 300) * 100"
+                      [title]="chartLabels[i] + ': ' + (value | number) + ' orders'"
+                    ></div>
+                  </div>
+                  <div class="chart-labels">
+                    <span *ngFor="let label of chartLabels" class="chart-label">{{ label }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Tables Section -->
+          <div class="data-section">
+            <!-- Category Distribution -->
+            <div class="data-card category-distribution">
+              <div class="card-header">
+                <h3>Category Distribution</h3>
+                <button class="view-all-btn" (click)="setActiveSection('products')">
+                  View All Products
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9,18 15,12 9,6"></polyline>
+                  </svg>
+                </button>
+              </div>
+              <div class="category-list">
+                <div *ngFor="let category of categoryDistribution" class="category-item">
+                  <div class="category-info">
+                    <span class="category-name">{{ category.name }}</span>
+                    <span class="category-count">{{ category.value }} products</span>
+                  </div>
+                  <div class="category-progress">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="category.percentage"></div>
+                    </div>
+                    <span class="category-percentage">{{ category.percentage }}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Selling Products -->
+            <div class="data-card top-products">
+              <div class="card-header">
+                <h3>Top Selling Products</h3>
+                <span class="period-indicator">{{ selectedPeriod === '30days' ? 'This Month' : 'This Period' }}</span>
+              </div>
+              <div class="products-list">
+                <div *ngFor="let product of topSellingProducts; let i = index" class="product-item">
+                  <div class="product-rank">{{ i + 1 }}</div>
+                  <div class="product-info">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-stats">
+                      <span class="sales-count">{{ product.sales }} sold</span>
+                      <span class="revenue-amount">{{ product.revenue | currency }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="data-card recent-activity">
+              <div class="card-header">
+                <h3>Recent Activity</h3>
+                <button class="refresh-btn small" (click)="refreshStats()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23,4 23,10 17,10"></polyline>
+                    <polyline points="1,20 1,14 7,14"></polyline>
+                    <path d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10m22,4L18.36,18.36A9,9,0,0,1,3.51,15"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="activity-list">
+                <div *ngFor="let activity of recentActivities" class="activity-item">
+                  <div class="activity-icon" [ngClass]="getActivityColor(activity.type)">
+                    {{ activity.icon }}
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-message">{{ activity.message }}</div>
+                    <div class="activity-time">{{ activity.time }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock Alerts -->
+          <div class="alerts-section" *ngIf="stats && (stats.lowStockItems > 0 || stats.outOfStockItems > 0)">
+            <div class="alert-card stock-alert" *ngIf="stats.lowStockItems > 0">
+              <div class="alert-icon warning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </div>
+              <div class="alert-content">
+                <div class="alert-title">Low Stock Alert</div>
+                <div class="alert-message">{{ stats.lowStockItems }} products are running low on stock</div>
+              </div>
+              <button class="alert-action" (click)="setActiveSection('products')">
+                View Products
+              </button>
+            </div>
+
+            <div class="alert-card stock-alert critical" *ngIf="stats.outOfStockItems > 0">
+              <div class="alert-icon error">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              </div>
+              <div class="alert-content">
+                <div class="alert-title">Out of Stock</div>
+                <div class="alert-message">{{ stats.outOfStockItems }} products are completely out of stock</div>
+              </div>
+              <button class="alert-action" (click)="setActiveSection('products')">
+                Restock Now
+              </button>
             </div>
           </div>
         </div>
