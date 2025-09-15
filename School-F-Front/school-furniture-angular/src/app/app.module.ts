@@ -11,7 +11,7 @@ import { AuthInterceptor } from './services';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { CartDropdownComponent } from './components/cart-dropdown/cart-dropdown.component';
-import { HomeComponent } from './pages/home/home.component';
+//import { HomeComponent } from './pages/home/home.component';
 import { ProductsComponent } from './pages/products/products.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
@@ -29,7 +29,7 @@ import { AdminUsersComponent } from './pages/admin/admin-users/admin-users.compo
     HeaderComponent,
     FooterComponent,
     CartDropdownComponent,
-    HomeComponent,
+    //HomeComponent,
     ProductsComponent,
     LoginComponent,
     RegisterComponent,

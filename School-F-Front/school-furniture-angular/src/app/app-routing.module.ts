@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
+//import { HomeComponent } from './pages/home/home.component';
 import { ProductsComponent } from './pages/products/products.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
@@ -14,8 +14,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { AdminRedirectGuard } from './guards/admin-redirect.guard';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent, canActivate: [AdminRedirectGuard] },
+  { path: '', redirectTo: '/products', pathMatch: 'full' },
   { path: 'products', component: ProductsComponent, canActivate: [AdminRedirectGuard] },
   { path: 'login', component: LoginComponent, canActivate: [AdminRedirectGuard] },
   { path: 'register', component: RegisterComponent, canActivate: [AdminRedirectGuard] },
