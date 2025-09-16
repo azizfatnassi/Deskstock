@@ -3,39 +3,39 @@
     <!-- Filters Sidebar -->
     <div class="col-lg-3 col-md-4 mb-4">
       <div class="filters-sidebar">
-        <h5 class="mb-3">Filters</h5>
+        <h5 class="mb-3">Filtres</h5>
         
-        <!-- Search -->
+        <!-- Recherche -->
         <div class="filter-section mb-4">
-          <label class="form-label">Search Products</label>
+          <label class="form-label">RECHERCHER DES PRODUITS</label>
           <input 
             type="text" 
             class="form-control" 
-            placeholder="Search by name or description..."
+            placeholder="Rechercher par nom ou description..."
             [value]="searchQuery"
             (input)="onSearchChange($any($event.target).value)">
         </div>
         
-        <!-- Category Filter -->
+        <!-- Filtre Catégorie -->
         <div class="filter-section mb-4">
-          <label class="form-label">Category</label>
+          <label class="form-label">CATÉGORIE</label>
           <select 
             class="form-select" 
             [value]="selectedCategory"
             (change)="onCategoryChange($any($event.target).value)">
-            <option value="">All Categories</option>
+            <option value="">Toutes les catégories</option>
             <option *ngFor="let category of categories" [value]="category.name">{{category.displayName}}</option>
           </select>
         </div>
         
-        <!-- Color Filter -->
+        <!-- Filtre Couleur -->
         <div class="filter-section mb-4">
-          <label class="form-label">Color</label>
+          <label class="form-label">COULEUR</label>
           <select 
             class="form-select" 
             [value]="selectedColor"
             (change)="onColorChange($any($event.target).value)">
-            <option value="">All Colors</option>
+            <option value="">Toutes les couleurs</option>
             <option *ngFor="let color of colors" [value]="color.name">{{color.displayName}}</option>
           </select>
         </div>
