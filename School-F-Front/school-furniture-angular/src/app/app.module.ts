@@ -16,10 +16,8 @@ import { ProductsComponent } from './pages/products/products.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { CartComponent } from './pages/cart/cart.component';
-import { AdminLoginComponent } from './pages/admin/admin-login/admin-login.component';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
 import { AdminProductsComponent } from './pages/admin/admin-products/admin-products.component';
-import { AdminStatisticsComponent } from './pages/admin/admin-statistics/admin-statistics.component';
 import { AdminUsersComponent } from './pages/admin/admin-users/admin-users.component';
 
 
@@ -34,10 +32,8 @@ import { AdminUsersComponent } from './pages/admin/admin-users/admin-users.compo
     LoginComponent,
     RegisterComponent,
     CartComponent,
-    AdminLoginComponent,
     AdminDashboardComponent,
     AdminProductsComponent,
-    AdminStatisticsComponent,
     AdminUsersComponent
   ],
   imports: [

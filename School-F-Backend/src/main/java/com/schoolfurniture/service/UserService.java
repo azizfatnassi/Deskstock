@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -134,5 +135,25 @@ public class UserService {
      */
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+    
+    /**
+     * Get all users (Admin only)
+     * @return list of all users
+     */
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+    
+    /**
+     * Delete user by ID (Admin only)
+     * @param userId the user ID to delete
+     * @throws RuntimeException if user not found
+     */
+    public void deleteById(Integer userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+        userRepository.deleteById(userId);
     }
 }

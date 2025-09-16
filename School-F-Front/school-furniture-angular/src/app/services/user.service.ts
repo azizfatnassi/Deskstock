@@ -17,6 +17,13 @@ interface UpdateUserRequest {
   role: string;
 }
 
+interface CreateUserRequest {
+  name: string;
+  email: string;
+  role: string;
+  password: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -55,10 +62,19 @@ export class UserService {
   }
 
   /**
+   * Create new user (Admin only)
+   */
+  createUser(userData: CreateUserRequest): Observable<User> {
+    return this.http.post<User>(`${this.baseUrl}/users/admin`, userData, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  /**
    * Update user (Admin only)
    */
   updateUser(userId: number, userData: UpdateUserRequest): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/admin/users/${userId}`, userData, {
+    return this.http.put<User>(`${this.baseUrl}/users/admin/${userId}`, userData, {
       headers: this.getAuthHeaders()
     });
   }

@@ -17,11 +17,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*")
 public class UserController {
     
     @Autowired
@@ -147,6 +148,98 @@ public class UserController {
             response.put("email", user.getEmail());
             response.put("role", user.getRole());
             
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Get all users (Admin only)
+     * @return ResponseEntity with list of all users
+     */
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            List<User> users = userService.findAll();
+            return ResponseEntity.ok(users);
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Create user (Admin only)
+     * @param registrationRequest the user registration request
+     * @return ResponseEntity with success message and user info
+     */
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserRegistrationRequest registrationRequest) {
+        try {
+            User user = userService.register(registrationRequest);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User created successfully");
+            response.put("userId", user.getUserId());
+            response.put("name", user.getName());
+            response.put("email", user.getEmail());
+            response.put("role", user.getRole());
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Update user (Admin only)
+     * @param id the user ID
+     * @param updateRequest the profile update request
+     * @return ResponseEntity with updated user info
+     */
+    @PutMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUser(
+            @PathVariable Integer id,
+            @Valid @RequestBody UserProfileUpdateRequest updateRequest) {
+        try {
+            User updatedUser = userService.updateProfile(id, updateRequest);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User updated successfully");
+            response.put("userId", updatedUser.getUserId());
+            response.put("name", updatedUser.getName());
+            response.put("email", updatedUser.getEmail());
+            response.put("role", updatedUser.getRole());
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+    
+    /**
+     * Delete user (Admin only)
+     * @param id the user ID to delete
+     * @return ResponseEntity with success message
+     */
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
+        try {
+            userService.deleteById(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "User deleted successfully");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, String> errorResponse = new HashMap<>();

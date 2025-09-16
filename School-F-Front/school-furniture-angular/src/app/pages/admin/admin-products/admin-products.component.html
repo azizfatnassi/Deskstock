@@ -1,137 +1,414 @@
-<div class="admin-products">
-  <div class="header">
-    <h1>Product Management</h1>
-    <button class="add-btn" (click)="showAddProductForm()">
-      Add New Product
-    </button>
+<div class="admin-products-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBackToDashboard()" title="Back to Dashboard">
+        <i class="fas fa-arrow-left"></i>
+        Dashboard
+      </button>
+      <h1>Product Management</h1>
+      <button class="add-btn" (click)="showAddProduct()" [disabled]="isLoading">
+        <i class="fas fa-plus"></i>
+        Add New Product
+      </button>
+    </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filters">
+  <!-- Filters and Search -->
+  <div class="filters-section">
     <div class="search-box">
-      <input type="text" placeholder="Search products..." [(ngModel)]="searchTerm" (input)="onSearchChange()">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        placeholder="Search products by name or description..." 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+      >
     </div>
     
-    <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-      <option value="">All Categories</option>
-      <option value="Chair">Chair</option>
-      <option value="Table">Table</option>
-      <option value="Desk">Desk</option>
-      <option value="Storage">Storage</option>
-      <option value="Lighting">Lighting</option>
-      <option value="Decor">Decor</option>
-    </select>
-    
-    <select [(ngModel)]="stockFilter" (change)="onStockFilterChange()">
-      <option value="all">All Stock</option>
-      <option value="in-stock">In Stock</option>
-      <option value="low-stock">Low Stock</option>
-      <option value="out-of-stock">Out of Stock</option>
-    </select>
+    <div class="filter-group">
+      <label>Category:</label>
+      <select [(ngModel)]="selectedCategory" (change)="onCategoryFilterChange()">
+        <option value="">All Categories</option>
+        <option *ngFor="let category of categories" [value]="category.value">
+          {{ category.label }}
+        </option>
+      </select>
+    </div>
   </div>
 
-  <!-- Product List -->
-  <div class="products-container">
-    <div class="loading" *ngIf="isLoading">
-      Loading products...
+  <!-- Messages -->
+  <div class="messages" *ngIf="error || successMessage">
+    <div class="alert alert-success" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
     </div>
-    
-    <div class="products-grid" *ngIf="!isLoading && filteredProducts.length > 0">
-      <div class="product-card" *ngFor="let product of getPaginatedProducts()">
-        <div class="product-image">
-          <img [src]="product.imageUrl || '/assets/placeholder.jpg'" [alt]="product.name">
-        </div>
-        
-        <div class="product-info">
-          <h3>{{ product.name }}</h3>
-          <p class="description">{{ product.description }}</p>
-          <p class="price">${{ product.price }}</p>
-          <p class="stock" [class]="getStockStatus(product.stockQuantity)">Stock: {{ product.stockQuantity }}</p>
-          <p class="category">{{ product.category }}</p>
-        </div>
-        
-        <div class="product-actions">
-          <button class="action-btn edit" (click)="editProduct(product)" title="Edit Product">
-            Edit
-          </button>
-          
-          <button class="action-btn delete" (click)="deleteProduct(product)" title="Delete Product">
-            Delete
-          </button>
-        </div>
-      </div>
+    <div class="alert alert-error" *ngIf="error">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ error }}
     </div>
-    
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Products Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of paginatedProducts" class="product-row">
+          <td class="product-image">
+            <img [src]="product.imageUrl" [alt]="product.name" class="product-thumb">
+          </td>
+          <td class="product-name">
+            <div class="product-info">
+              <span class="name">{{ product.name }}</span>
+              <span class="description">{{ product.description | slice:0:50 }}{{ product.description.length > 50 ? '...' : '' }}</span>
+            </div>
+          </td>
+          <td class="product-category">
+            <span class="category-badge" [class]="'category-' + product.category.toLowerCase()">
+              {{ getCategoryLabel(product.category) }}
+            </span>
+          </td>
+          <td class="product-price">${{ product.price | number:'1.2-2' }}</td>
+          <td class="product-stock">
+            <span class="stock-badge" [class]="{
+              'stock-low': product.stockQuantity <= 5 && product.stockQuantity > 0,
+              'stock-out': product.stockQuantity === 0,
+              'stock-good': product.stockQuantity > 5
+            }">
+              {{ product.stockQuantity }}
+            </span>
+          </td>
+          <td class="product-actions">
+            <button 
+              class="action-btn edit" 
+              (click)="editProduct(product)" 
+              [disabled]="isUpdating || isDeleting"
+              title="Edit Product"
+            >
+              <i class="fas fa-edit"></i>
+              Edit
+            </button>
+            <button 
+              class="action-btn delete" 
+              (click)="deleteProduct(product)" 
+              [disabled]="isUpdating || isDeleting"
+              title="Delete Product"
+            >
+              <span *ngIf="!isProductDeleting(product.productId)">
+                <i class="fas fa-trash"></i>
+                Delete
+              </span>
+              <span *ngIf="isProductDeleting(product.productId)">
+                <svg class="spinner-icon" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                    <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+                Deleting...
+              </span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!isLoading && filteredProducts.length === 0">
+    <div class="empty-state" *ngIf="filteredProducts.length === 0">
+      <i class="fas fa-box-open"></i>
       <h3>No products found</h3>
       <p>Try adjusting your filters or start by adding your first product</p>
-      <button class="add-btn" (click)="showAddProductForm()">
+      <button class="add-btn" (click)="showAddProduct()">
         Add First Product
       </button>
     </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!isLoading && filteredProducts.length > 0">
+    <button 
+      class="page-btn" 
+      (click)="prevPage()" 
+      [disabled]="currentPage === 1"
+    >
+      <i class="fas fa-chevron-left"></i>
+    </button>
     
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-        Previous
-      </button>
-      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
-      <button class="page-btn" [disabled]="currentPage >= totalPages" (click)="goToPage(currentPage + 1)">
-        Next
-      </button>
-    </div>
+    <span class="page-info">
+      Page {{ currentPage }} of {{ totalPages }}
+    </span>
+    
+    <button 
+      class="page-btn" 
+      (click)="nextPage()" 
+      [disabled]="currentPage === totalPages"
+    >
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 </div>
 
-<!-- Add/Edit Product Modal -->
-<div class="modal-overlay" *ngIf="showAddForm" (click)="cancelForm()">
+<!-- Add Product Modal -->
+<div class="modal-overlay" *ngIf="showAddModal" (click)="cancelAdd()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>{{ editingProduct ? 'Edit Product' : 'Add New Product' }}</h2>
-      <button class="close-btn" (click)="cancelForm()">&times;</button>
+      <h2>Add New Product</h2>
+      <button class="close-btn" (click)="cancelAdd()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
-    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="name">Product Name</label>
-        <input type="text" id="name" formControlName="name" required>
+    <form [formGroup]="addProductForm" (ngSubmit)="createProduct()" class="product-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="addName">Product Name *</label>
+          <input 
+            id="addName"
+            type="text" 
+            formControlName="name" 
+            placeholder="Enter product name"
+            [class.error]="addProductForm.get('name')?.invalid && addProductForm.get('name')?.touched"
+          >
+          <div class="error-message" *ngIf="addProductForm.get('name')?.invalid && addProductForm.get('name')?.touched">
+            <span *ngIf="addProductForm.get('name')?.errors?.['required']">Product name is required</span>
+            <span *ngIf="addProductForm.get('name')?.errors?.['minlength']">Name must be at least 2 characters</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="addPrice">Price *</label>
+          <input 
+            id="addPrice"
+            type="number" 
+            step="0.01"
+            formControlName="price" 
+            placeholder="0.00"
+            [class.error]="addProductForm.get('price')?.invalid && addProductForm.get('price')?.touched"
+          >
+          <div class="error-message" *ngIf="addProductForm.get('price')?.invalid && addProductForm.get('price')?.touched">
+            <span *ngIf="addProductForm.get('price')?.errors?.['required']">Price is required</span>
+            <span *ngIf="addProductForm.get('price')?.errors?.['min']">Price must be greater than 0</span>
+          </div>
+        </div>
       </div>
-      
+
       <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category" formControlName="category" required>
-          <option value="">Select Category</option>
-          <option value="Chair">Chair</option>
-          <option value="Table">Table</option>
-          <option value="Desk">Desk</option>
-          <option value="Storage">Storage</option>
-        </select>
+        <label for="addDescription">Description *</label>
+        <textarea 
+          id="addDescription"
+          formControlName="description" 
+          placeholder="Enter product description"
+          rows="3"
+          [class.error]="addProductForm.get('description')?.invalid && addProductForm.get('description')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="addProductForm.get('description')?.invalid && addProductForm.get('description')?.touched">
+          <span *ngIf="addProductForm.get('description')?.errors?.['required']">Description is required</span>
+          <span *ngIf="addProductForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters</span>
+        </div>
       </div>
-      
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="addCategory">Category *</label>
+          <select id="addCategory" formControlName="category">
+            <option value="">Select Category</option>
+            <option *ngFor="let category of categories" [value]="category.value">
+              {{ category.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="addColor">Color *</label>
+          <select id="addColor" formControlName="color">
+            <option value="">Select Color</option>
+            <option *ngFor="let color of colors" [value]="color.value">
+              {{ color.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="addStock">Stock Quantity *</label>
+          <input 
+            id="addStock"
+            type="number" 
+            formControlName="stockQuantity" 
+            placeholder="0"
+            [class.error]="addProductForm.get('stockQuantity')?.invalid && addProductForm.get('stockQuantity')?.touched"
+          >
+          <div class="error-message" *ngIf="addProductForm.get('stockQuantity')?.invalid && addProductForm.get('stockQuantity')?.touched">
+            <span *ngIf="addProductForm.get('stockQuantity')?.errors?.['required']">Stock quantity is required</span>
+            <span *ngIf="addProductForm.get('stockQuantity')?.errors?.['min']">Stock quantity cannot be negative</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="addImageUrl">Image URL</label>
+          <input 
+            id="addImageUrl"
+            type="url" 
+            formControlName="imageUrl" 
+            placeholder="https://example.com/image.jpg (optional)"
+          >
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cancelAdd()" [disabled]="isCreating">
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          class="create-btn" 
+          [disabled]="addProductForm.invalid || isCreating"
+        >
+          <span *ngIf="isCreating">Creating...</span>
+          <span *ngIf="!isCreating">Create Product</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="cancelEdit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Product</h2>
+      <button class="close-btn" (click)="cancelEdit()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <form [formGroup]="editProductForm" (ngSubmit)="updateProduct()" class="product-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editName">Product Name *</label>
+          <input 
+            id="editName"
+            type="text" 
+            formControlName="name" 
+            placeholder="Enter product name"
+            [class.error]="editProductForm.get('name')?.invalid && editProductForm.get('name')?.touched"
+          >
+          <div class="error-message" *ngIf="editProductForm.get('name')?.invalid && editProductForm.get('name')?.touched">
+            <span *ngIf="editProductForm.get('name')?.errors?.['required']">Product name is required</span>
+            <span *ngIf="editProductForm.get('name')?.errors?.['minlength']">Name must be at least 2 characters</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editPrice">Price *</label>
+          <input 
+            id="editPrice"
+            type="number" 
+            step="0.01"
+            formControlName="price" 
+            placeholder="0.00"
+            [class.error]="editProductForm.get('price')?.invalid && editProductForm.get('price')?.touched"
+          >
+          <div class="error-message" *ngIf="editProductForm.get('price')?.invalid && editProductForm.get('price')?.touched">
+            <span *ngIf="editProductForm.get('price')?.errors?.['required']">Price is required</span>
+            <span *ngIf="editProductForm.get('price')?.errors?.['min']">Price must be greater than 0</span>
+          </div>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label for="price">Price</label>
-        <input type="number" id="price" formControlName="price" step="0.01" required>
+        <label for="editDescription">Description *</label>
+        <textarea 
+          id="editDescription"
+          formControlName="description" 
+          placeholder="Enter product description"
+          rows="3"
+          [class.error]="editProductForm.get('description')?.invalid && editProductForm.get('description')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="editProductForm.get('description')?.invalid && editProductForm.get('description')?.touched">
+          <span *ngIf="editProductForm.get('description')?.errors?.['required']">Description is required</span>
+          <span *ngIf="editProductForm.get('description')?.errors?.['minlength']">Description must be at least 10 characters</span>
+        </div>
       </div>
-      
-      <div class="form-group">
-        <label for="stock">Stock Quantity</label>
-        <input type="number" id="stock" formControlName="stockQuantity" required>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editCategory">Category *</label>
+          <select id="editCategory" formControlName="category">
+            <option value="">Select Category</option>
+            <option *ngFor="let category of categories" [value]="category.value">
+              {{ category.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editColor">Color *</label>
+          <select id="editColor" formControlName="color">
+            <option value="">Select Color</option>
+            <option *ngFor="let color of colors" [value]="color.value">
+              {{ color.label }}
+            </option>
+          </select>
+        </div>
       </div>
-      
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" formControlName="description" rows="4" required></textarea>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editStock">Stock Quantity *</label>
+          <input 
+            id="editStock"
+            type="number" 
+            formControlName="stockQuantity" 
+            placeholder="0"
+            [class.error]="editProductForm.get('stockQuantity')?.invalid && editProductForm.get('stockQuantity')?.touched"
+          >
+          <div class="error-message" *ngIf="editProductForm.get('stockQuantity')?.invalid && editProductForm.get('stockQuantity')?.touched">
+            <span *ngIf="editProductForm.get('stockQuantity')?.errors?.['required']">Stock quantity is required</span>
+            <span *ngIf="editProductForm.get('stockQuantity')?.errors?.['min']">Stock quantity cannot be negative</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editImageUrl">Image URL</label>
+          <input 
+            id="editImageUrl"
+            type="url" 
+            formControlName="imageUrl" 
+            placeholder="https://example.com/image.jpg (optional)"
+          >
+        </div>
       </div>
-      
-      <div class="form-group">
-        <label for="imageUrl">Image URL</label>
-        <input type="url" id="imageUrl" formControlName="imageUrl">
-      </div>
-      
-      <div class="form-actions">
-        <button type="button" class="cancel-btn" (click)="cancelForm()">Cancel</button>
-        <button type="submit" class="save-btn" [disabled]="!productForm.valid">Save Product</button>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cancelEdit()" [disabled]="isUpdating">
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          class="update-btn" 
+          [disabled]="editProductForm.invalid || isUpdating"
+        >
+          <span *ngIf="isUpdating">Updating...</span>
+          <span *ngIf="!isUpdating">Update Product</span>
+        </button>
       </div>
     </form>
   </div>
