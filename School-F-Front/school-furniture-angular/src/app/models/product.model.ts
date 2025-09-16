@@ -3,8 +3,9 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  category: Category;
-  color: Color;
+  category: string;
+  color?: string;
+  codeArticle?: string;
   imageUrl?: string;
   stockQuantity: number;
   isActive: boolean;
@@ -18,7 +19,8 @@ export interface ProductResponse {
   description: string;
   price: number;
   category: string;
-  color: string;
+  color?: string;
+  codeArticle?: string;
   imageUrl?: string;
   stockQuantity: number;
   isActive: boolean;
@@ -28,30 +30,15 @@ export interface ProductRequest {
   name: string;
   description: string;
   price: number;
-  category: Category;
-  color: Color;
+  category: string;
+  color?: string;
+  codeArticle?: string;
   imageUrl?: string;
   stockQuantity: number;
 }
 
-export enum Category {
-  DESKS = 'DESKS',
-  CHAIRS = 'CHAIRS',
-  TABLES = 'TABLES',
-  STORAGE = 'STORAGE',
-  ACCESSORIES = 'ACCESSORIES'
-}
-
-export enum Color {
-  RED = 'RED',
-  BLUE = 'BLUE',
-  GREEN = 'GREEN',
-  YELLOW = 'YELLOW',
-  BLACK = 'BLACK',
-  WHITE = 'WHITE',
-  BROWN = 'BROWN',
-  GRAY = 'GRAY'
-}
+// Removed enums - now using string fields
+// Categories and colors are now free text fields
 
 export interface CategoryResponse {
   name: string;

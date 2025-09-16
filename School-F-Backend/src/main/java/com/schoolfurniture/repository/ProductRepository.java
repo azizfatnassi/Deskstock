@@ -1,8 +1,7 @@
 package com.schoolfurniture.repository;
 
 import com.schoolfurniture.entity.Product;
-import com.schoolfurniture.enums.Category;
-import com.schoolfurniture.enums.Color;
+// Removed enum imports - now using String fields
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,32 +29,32 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     /**
      * Find products by category
      */
-    List<Product> findByCategoryAndIsActiveTrue(Category category);
+    List<Product> findByCategoryAndIsActiveTrue(String category);
     
     /**
      * Find products by category with pagination
      */
-    Page<Product> findByCategoryAndIsActiveTrue(Category category, Pageable pageable);
+    Page<Product> findByCategoryAndIsActiveTrue(String category, Pageable pageable);
     
     /**
      * Find products by color
      */
-    List<Product> findByColorAndIsActiveTrue(Color color);
+    List<Product> findByColorAndIsActiveTrue(String color);
     
     /**
      * Find products by color with pagination
      */
-    Page<Product> findByColorAndIsActiveTrue(Color color, Pageable pageable);
+    Page<Product> findByColorAndIsActiveTrue(String color, Pageable pageable);
     
     /**
      * Find products by category and color
      */
-    List<Product> findByCategoryAndColorAndIsActiveTrue(Category category, Color color);
+    List<Product> findByCategoryAndColorAndIsActiveTrue(String category, String color);
     
     /**
      * Find products by category and color with pagination
      */
-    Page<Product> findByCategoryAndColorAndIsActiveTrue(Category category, Color color, Pageable pageable);
+    Page<Product> findByCategoryAndColorAndIsActiveTrue(String category, String color, Pageable pageable);
     
     /**
      * Find products by price range
@@ -93,8 +92,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
            "p.isActive = true")
     Page<Product> findProductsWithFilters(
             @Param("searchTerm") String searchTerm,
-            @Param("category") Category category,
-            @Param("color") Color color,
+            @Param("category") String category,
+            @Param("color") String color,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable);
@@ -131,13 +130,19 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
      * Find products by category name
      */
     @Query("SELECT p FROM Product p WHERE p.category = :category AND p.isActive = true")
-    List<Product> findByCategoryEnum(@Param("category") Category category);
+    List<Product> findByCategory(@Param("category") String category);
     
     /**
      * Find products by color name
      */
     @Query("SELECT p FROM Product p WHERE p.color = :color AND p.isActive = true")
-    List<Product> findByColorEnum(@Param("color") Color color);
+    List<Product> findByColor(@Param("color") String color);
+    
+    /**
+     * Find product by code article
+     */
+    @Query("SELECT p FROM Product p WHERE p.codeArticle = :codeArticle")
+    Optional<Product> findByCodeArticle(@Param("codeArticle") String codeArticle);
     
     /**
      * Get product statistics for admin dashboard
@@ -150,4 +155,16 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
      */
     @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.createdAt DESC")
     List<Product> findRecentlyAddedProducts(Pageable pageable);
+    
+    /**
+     * Get distinct categories from active products
+     */
+    @Query("SELECT DISTINCT p.category FROM Product p WHERE p.isActive = true AND p.category IS NOT NULL ORDER BY p.category")
+    List<String> findDistinctCategories();
+    
+    /**
+     * Get distinct colors from active products
+     */
+    @Query("SELECT DISTINCT p.color FROM Product p WHERE p.isActive = true AND p.color IS NOT NULL ORDER BY p.color")
+    List<String> findDistinctColors();
 }

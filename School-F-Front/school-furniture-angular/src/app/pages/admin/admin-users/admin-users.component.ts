@@ -75,7 +75,7 @@ export class AdminUsersComponent implements OnInit {
   checkAdminAccess(): void {
     this.currentUser = this.authService.getCurrentUser();
     if (!this.currentUser || !this.authService.isAdmin()) {
-      this.router.navigate(['/admin/login']);
+      this.router.navigate(['/login']);
     }
   }
 

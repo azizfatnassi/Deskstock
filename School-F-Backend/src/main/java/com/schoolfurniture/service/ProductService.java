@@ -1,8 +1,7 @@
 package com.schoolfurniture.service;
 
 import com.schoolfurniture.entity.Product;
-import com.schoolfurniture.enums.Category;
-import com.schoolfurniture.enums.Color;
+// Removed enum imports - now using String fields
 import com.schoolfurniture.repository.ProductRepository;
 import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,14 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<Product> getAllActiveProducts(Pageable pageable) {
         return productRepository.findByIsActiveTrue(pageable);
+    }
+    
+    /**
+     * Get all products (including inactive ones) with pagination - for admin use
+     */
+    @Transactional(readOnly = true)
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
     
     /**
@@ -106,15 +113,15 @@ public class ProductService {
      * Get products by category
      */
     @Transactional(readOnly = true)
-    public List<Product> getProductsByCategory(Category category) {
-        return productRepository.findByCategoryAndIsActiveTrue(category);
+    public List<Product> getProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
     }
     
     /**
      * Get products by category with pagination
      */
     @Transactional(readOnly = true)
-    public Page<Product> getProductsByCategory(Category category, Pageable pageable) {
+    public Page<Product> getProductsByCategory(String category, Pageable pageable) {
         return productRepository.findByCategoryAndIsActiveTrue(category, pageable);
     }
     
@@ -122,15 +129,15 @@ public class ProductService {
      * Get products by color
      */
     @Transactional(readOnly = true)
-    public List<Product> getProductsByColor(Color color) {
-        return productRepository.findByColorAndIsActiveTrue(color);
+    public List<Product> getProductsByColor(String color) {
+        return productRepository.findByColor(color);
     }
     
     /**
      * Get products by color with pagination
      */
     @Transactional(readOnly = true)
-    public Page<Product> getProductsByColor(Color color, Pageable pageable) {
+    public Page<Product> getProductsByColor(String color, Pageable pageable) {
         return productRepository.findByColorAndIsActiveTrue(color, pageable);
     }
     
@@ -154,7 +161,7 @@ public class ProductService {
      * Advanced search with multiple filters
      */
     @Transactional(readOnly = true)
-    public Page<Product> searchProductsWithFilters(String searchTerm, Category category, Color color, 
+    public Page<Product> searchProductsWithFilters(String searchTerm, String category, String color, 
                                                    BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         return productRepository.findProductsWithFilters(searchTerm, category, color, minPrice, maxPrice, pageable);
     }
@@ -163,24 +170,21 @@ public class ProductService {
      * Find products by category name
      */
     public List<Product> findByCategoryName(String categoryName) {
-        try {
-            Category category = Category.valueOf(categoryName.toUpperCase());
-            return productRepository.findByCategoryAndIsActiveTrue(category);
-        } catch (IllegalArgumentException e) {
-            return new ArrayList<>();
-        }
+        return productRepository.findByCategory(categoryName);
     }
     
     /**
      * Find products by color name
      */
     public List<Product> findByColorName(String colorName) {
-        try {
-            Color color = Color.valueOf(colorName.toUpperCase());
-            return productRepository.findByColorAndIsActiveTrue(color);
-        } catch (IllegalArgumentException e) {
-            return new ArrayList<>();
-        }
+        return productRepository.findByColor(colorName);
+    }
+    
+    /**
+     * Find product by code article
+     */
+    public Optional<Product> findByCodeArticle(String codeArticle) {
+        return productRepository.findByCodeArticle(codeArticle);
     }
     
     /**
@@ -285,5 +289,21 @@ public class ProductService {
         }
         
         // Category and color validation is handled by enum constraints
+    }
+    
+    /**
+     * Get distinct categories from database
+     */
+    @Transactional(readOnly = true)
+    public List<String> getDistinctCategories() {
+        return productRepository.findDistinctCategories();
+    }
+    
+    /**
+     * Get distinct colors from database
+     */
+    @Transactional(readOnly = true)
+    public List<String> getDistinctColors() {
+        return productRepository.findDistinctColors();
     }
 }

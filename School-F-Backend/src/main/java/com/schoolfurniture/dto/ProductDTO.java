@@ -9,8 +9,9 @@ public class ProductDTO {
     private String name;
     private String description;
     private BigDecimal price;
-    private Integer categoryId;
-    private String categoryName;
+    private String category;
+    private String color;
+    private String codeArticle;
     private Integer stock;
     private String imageUrl;
     private Boolean active;

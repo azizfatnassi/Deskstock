@@ -5,7 +5,7 @@ import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
-import { Product, ProductResponse, PagedResponse, Category, Color, CategoryResponse, ColorResponse } from '../../models/product.model';
+import { Product, ProductResponse, PagedResponse } from '../../models/product.model';
 import { CartItemRequest } from '../../models/cart.model';
 
 @Component({
@@ -17,8 +17,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
   products: ProductResponse[] = [];
-  categories: CategoryResponse[] = [];
-  colors: ColorResponse[] = [];
+  categories: {name: string, displayName: string}[] = [];
+  colors: {name: string, displayName: string}[] = [];
   
   // Search and filter parameters
   searchQuery: string = '';
@@ -79,27 +79,47 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
   
   private loadCategories(): void {
-    this.productService.getAllCategories().pipe(
+    // Load categories from database
+    this.productService.getDistinctCategories().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: (categories: CategoryResponse[]) => {
-        this.categories = categories;
+      next: (categoryStrings: string[]) => {
+        this.categories = categoryStrings.map(cat => ({
+          name: cat,
+          displayName: cat
+        }));
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error loading categories:', error);
+        // Fallback to predefined categories
+        const categoryStrings = this.productService.getPredefinedCategories();
+        this.categories = categoryStrings.map(cat => ({
+          name: cat,
+          displayName: cat
+        }));
       }
     });
   }
-  
+
   private loadColors(): void {
-    this.productService.getAllColors().pipe(
+    // Load colors from database
+    this.productService.getDistinctColors().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: (colors: ColorResponse[]) => {
-        this.colors = colors;
+      next: (colorStrings: string[]) => {
+        this.colors = colorStrings.map(color => ({
+          name: color,
+          displayName: color
+        }));
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error loading colors:', error);
+        // Fallback to predefined colors
+        const colorStrings = this.productService.getPredefinedColors();
+        this.colors = colorStrings.map(color => ({
+          name: color,
+          displayName: color
+        }));
       }
     });
   }
@@ -293,11 +313,23 @@ export class ProductsComponent implements OnInit, OnDestroy {
     alert('Failed to add item to cart. Please try again.');
   }
 
-  getPageNumbers(): number[] {
-    const pages = [];
-    for (let i = 0; i < this.totalPages; i++) {
-      pages.push(i);
+  getVisiblePages(): number[] {
+    const visiblePages: number[] = [];
+    const maxVisiblePages = 5; // Show 5 page numbers at most
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    
+    let startPage = Math.max(0, this.currentPage - halfVisible);
+    let endPage = Math.min(this.totalPages - 1, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(0, endPage - maxVisiblePages + 1);
     }
-    return pages;
+    
+    for (let i = startPage; i <= endPage; i++) {
+      visiblePages.push(i);
+    }
+    
+    return visiblePages;
   }
 }

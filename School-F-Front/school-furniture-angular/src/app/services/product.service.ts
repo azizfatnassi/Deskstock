@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { 
-  Product, 
-  ProductResponse, 
-  ProductRequest, 
-  PagedResponse, 
-  Category, 
-  Color,
-  CategoryResponse,
-  ColorResponse
+import {
+  Product,
+  ProductResponse,
+  ProductRequest,
+  PagedResponse
 } from '../models';
 
 @Injectable({
@@ -49,7 +45,7 @@ export class ProductService {
   }
 
   // Filter products by category
-  getProductsByCategory(category: Category, page: number = 0, size: number = 12, sortBy: string = 'name', sortDir: string = 'asc'): Observable<PagedResponse<ProductResponse>> {
+  getProductsByCategory(category: string, page: number = 0, size: number = 12, sortBy: string = 'name', sortDir: string = 'asc'): Observable<PagedResponse<ProductResponse>> {
     const params = new HttpParams()
       .set('category', category || '')
       .set('page', (page ?? 0).toString())
@@ -61,7 +57,7 @@ export class ProductService {
   }
 
   // Filter products by color
-  getProductsByColor(color: Color, page: number = 0, size: number = 12, sortBy: string = 'name', sortDir: string = 'asc'): Observable<PagedResponse<ProductResponse>> {
+  getProductsByColor(color: string, page: number = 0, size: number = 12, sortBy: string = 'name', sortDir: string = 'asc'): Observable<PagedResponse<ProductResponse>> {
     const params = new HttpParams()
       .set('color', color || '')
       .set('page', (page ?? 0).toString())
@@ -107,12 +103,12 @@ export class ProductService {
       params = params.set('query', query.trim());
     }
     if (category && category.trim()) {
-      // Convert category string to uppercase to match Java enum
-      params = params.set('category', category.trim().toUpperCase());
+      // Use category as-is since it's now a free text field
+      params = params.set('category', category.trim());
     }
     if (color && color.trim()) {
-      // Convert color string to uppercase to match Java enum
-      params = params.set('color', color.trim().toUpperCase());
+      // Use color as-is since it's now a free text field
+      params = params.set('color', color.trim());
     }
     if (minPrice !== null && minPrice !== undefined) {
       params = params.set('minPrice', (minPrice ?? 0).toString());
@@ -159,23 +155,50 @@ export class ProductService {
     return this.http.get<boolean>(`${this.baseUrl}/products/${id}/availability`, { params });
   }
 
-  // Get all categories
-  getAllCategories(): Observable<CategoryResponse[]> {
-    return this.http.get<CategoryResponse[]>(`${this.baseUrl}/categories`);
+  // Categories and colors are now free text fields
+  // No longer need separate endpoints for categories and colors
+  
+  // Get distinct categories from database
+  getDistinctCategories(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}/products/categories`);
   }
 
-  // Get category by name
-  getCategoryByName(name: string): Observable<CategoryResponse> {
-    return this.http.get<CategoryResponse>(`${this.baseUrl}/categories/${name}`);
+  // Get distinct colors from database
+  getDistinctColors(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}/products/colors`);
   }
 
-  // Get all colors
-  getAllColors(): Observable<ColorResponse[]> {
-    return this.http.get<ColorResponse[]>(`${this.baseUrl}/colors`);
+  // Get predefined categories (fallback - can be extended)
+  getPredefinedCategories(): string[] {
+    return [
+      'Desks',
+      'Chairs',
+      'Tables', 
+      'Storage',
+      'Whiteboards',
+      'Lighting',
+      'Accessories'
+    ];
   }
 
-  // Get color by name
-  getColorByName(name: string): Observable<ColorResponse> {
-    return this.http.get<ColorResponse>(`${this.baseUrl}/colors/${name}`);
+  // Get predefined colors (fallback - can be extended)
+  getPredefinedColors(): string[] {
+    return [
+      'White',
+      'Black',
+      'Brown',
+      'Gray',
+      'Blue',
+      'Red',
+      'Green',
+      'Yellow',
+      'Orange',
+      'Beige',
+      'Navy Blue',
+      'Maroon',
+      'Natural Wood',
+      'Dark Wood',
+      'Light Wood'
+    ];
   }
 }

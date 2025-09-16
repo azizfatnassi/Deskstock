@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ProductService } from '../../../services/product.service';
-import { ProductResponse, ProductRequest, Category, Color } from '../../../models/product.model';
+import { ProductResponse, ProductRequest } from '../../../models/product.model';
 
 @Component({
   selector: 'app-admin-products',
@@ -48,25 +48,9 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   editProductForm!: FormGroup;
   selectedProduct: ProductResponse | null = null;
   
-  // Categories and colors for dropdowns
-  categories = [
-    { value: 'DESKS', label: 'Desk' },
-    { value: 'CHAIRS', label: 'Chair' },
-    { value: 'TABLES', label: 'Table' },
-    { value: 'STORAGE', label: 'Storage' },
-    { value: 'ACCESSORIES', label: 'Accessories' }
-  ];
-  
-  colors = [
-    { value: 'WHITE', label: 'White' },
-    { value: 'BLACK', label: 'Black' },
-    { value: 'BROWN', label: 'Brown' },
-    { value: 'GRAY', label: 'Gray' },
-    { value: 'BLUE', label: 'Blue' },
-    { value: 'RED', label: 'Red' },
-    { value: 'GREEN', label: 'Green' },
-    { value: 'YELLOW', label: 'Yellow' }
-  ];
+  // Categories and colors loaded from database
+  categories: string[] = [];
+  colors: string[] = [];
   
   constructor(
     private productService: ProductService,
@@ -78,7 +62,41 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.loadProducts();
+    this.loadCategories();
+    this.loadColors();
     this.setupSearch();
+  }
+  
+  private loadCategories(): void {
+    // Load categories from database
+    this.productService.getDistinctCategories().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (categories: string[]) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        // Fallback to predefined categories
+        this.categories = this.productService.getPredefinedCategories();
+      }
+    });
+  }
+  
+  private loadColors(): void {
+    // Load colors from database
+    this.productService.getDistinctColors().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (colors: string[]) => {
+        this.colors = colors;
+      },
+      error: (error) => {
+        console.error('Error loading colors:', error);
+        // Fallback to predefined colors
+        this.colors = this.productService.getPredefinedColors();
+      }
+    });
   }
   
   ngOnDestroy(): void {
@@ -92,7 +110,8 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
       description: ['', [Validators.required, Validators.minLength(10)]],
       price: ['', [Validators.required, Validators.min(0.01)]],
       category: ['', Validators.required],
-      color: ['', Validators.required],
+      color: [''],
+      codeArticle: [''],
       stockQuantity: ['', [Validators.required, Validators.min(0)]],
       imageUrl: ['']
     });
@@ -102,7 +121,8 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
       description: ['', [Validators.required, Validators.minLength(10)]],
       price: ['', [Validators.required, Validators.min(0.01)]],
       category: ['', Validators.required],
-      color: ['', Validators.required],
+      color: [''],
+      codeArticle: [''],
       stockQuantity: ['', [Validators.required, Validators.min(0)]],
       imageUrl: ['']
     });
@@ -205,6 +225,33 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     }
   }
   
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.updatePaginatedProducts();
+    }
+  }
+  
+  getVisiblePages(): number[] {
+    const visiblePages: number[] = [];
+    const maxVisiblePages = 5; // Show 5 page numbers at most
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    
+    let startPage = Math.max(1, this.currentPage - halfVisible);
+    let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      visiblePages.push(i);
+    }
+    
+    return visiblePages;
+  }
+  
   // CRUD operations
   showAddProduct(): void {
     this.addProductForm.reset();
@@ -227,8 +274,9 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
         name: formValue.name,
         description: formValue.description,
         price: parseFloat(formValue.price),
-        category: formValue.category as Category,
-        color: formValue.color as Color,
+        category: formValue.category,
+        color: formValue.color,
+        codeArticle: formValue.codeArticle,
         imageUrl: formValue.imageUrl || undefined,
         stockQuantity: parseInt(formValue.stockQuantity)
       };
@@ -272,6 +320,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
       price: product.price,
       category: product.category,
       color: product.color,
+      codeArticle: product.codeArticle,
       stockQuantity: product.stockQuantity,
       imageUrl: product.imageUrl
     });
@@ -295,8 +344,9 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
         name: formValue.name,
         description: formValue.description,
         price: parseFloat(formValue.price),
-        category: formValue.category as Category,
-        color: formValue.color as Color,
+        category: formValue.category,
+        color: formValue.color,
+        codeArticle: formValue.codeArticle,
         imageUrl: formValue.imageUrl || undefined,
         stockQuantity: parseInt(formValue.stockQuantity)
       };
@@ -388,13 +438,11 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   
   // Template helper methods
   getCategoryLabel(value: string): string {
-    const category = this.categories.find(c => c.value === value);
-    return category ? category.label : value;
+    return value || 'N/A';
   }
   
   getColorLabel(value: string): string {
-    const color = this.colors.find(c => c.value === value);
-    return color ? color.label : value;
+    return value || 'N/A';
   }
   
   isProductDeleting(productId: number): boolean {

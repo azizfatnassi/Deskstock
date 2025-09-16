@@ -1,8 +1,7 @@
 package com.schoolfurniture.controller;
 
 import com.schoolfurniture.entity.Product;
-import com.schoolfurniture.enums.Category;
-import com.schoolfurniture.enums.Color;
+// Removed enum imports - now using String fields
 import com.schoolfurniture.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -11,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -42,7 +42,7 @@ public class ProductController {
                    Sort.by(sortBy).ascending();
         
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> products = productService.getAllActiveProducts(pageable);
+        Page<Product> products = productService.getAllProducts(pageable);
         
         return ResponseEntity.ok(products);
     }
@@ -54,7 +54,7 @@ public class ProductController {
     public ResponseEntity<Product> getProductById(@PathVariable Integer id) {
         Optional<Product> product = productService.getProductById(id);
         
-        if (product.isPresent() && product.get().getIsActive()) {
+        if (product.isPresent()) {
             return ResponseEntity.ok(product.get());
         } else {
             return ResponseEntity.notFound().build();
@@ -87,7 +87,7 @@ public class ProductController {
      */
     @GetMapping("/category/{category}")
     public ResponseEntity<Page<Product>> getProductsByCategory(
-            @PathVariable Category category,
+            @PathVariable String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "name") String sortBy,
@@ -108,7 +108,7 @@ public class ProductController {
      */
     @GetMapping("/color/{color}")
     public ResponseEntity<Page<Product>> getProductsByColor(
-            @PathVariable Color color,
+            @PathVariable String color,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(defaultValue = "name") String sortBy,
@@ -152,8 +152,8 @@ public class ProductController {
     @GetMapping("/filter")
     public ResponseEntity<Page<Product>> searchProductsWithFilters(
             @RequestParam(required = false) String query,
-            @RequestParam(required = false) Category category,
-            @RequestParam(required = false) Color color,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String color,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
@@ -228,12 +228,12 @@ public class ProductController {
      * Delete product (Admin only - soft delete)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
         try {
             productService.deleteProduct(id);
-            return ResponseEntity.ok().body("Product deleted successfully");
+            return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body("Error deleting product: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
     
@@ -268,6 +268,24 @@ public class ProductController {
     public ResponseEntity<List<Product>> getOutOfStockProducts() {
         List<Product> products = productService.getOutOfStockProducts();
         return ResponseEntity.ok(products);
+    }
+    
+    /**
+     * Get distinct categories from database
+     */
+    @GetMapping("/categories")
+    public ResponseEntity<List<String>> getDistinctCategories() {
+        List<String> categories = productService.getDistinctCategories();
+        return ResponseEntity.ok(categories);
+    }
+    
+    /**
+     * Get distinct colors from database
+     */
+    @GetMapping("/colors")
+    public ResponseEntity<List<String>> getDistinctColors() {
+        List<String> colors = productService.getDistinctColors();
+        return ResponseEntity.ok(colors);
     }
     
     /**

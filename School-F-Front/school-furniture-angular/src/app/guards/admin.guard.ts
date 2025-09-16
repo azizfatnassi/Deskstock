@@ -17,8 +17,8 @@ export class AdminGuard implements CanActivate {
       return true;
     }
     
-    // Redirect to admin login if not authenticated or not admin
-    this.router.navigate(['/admin/login']);
+    // Redirect to login if not authenticated or not admin
+    this.router.navigate(['/login']);
     return false;
   }
 }

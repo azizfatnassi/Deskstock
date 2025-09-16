@@ -6,8 +6,7 @@ import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.schoolfurniture.enums.Category;
-import com.schoolfurniture.enums.Color;
+// Removed enum imports - now using String fields
 
 @Entity
 @Table(name = "products")
@@ -54,14 +53,15 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
     @NotNull(message = "Category is required")
-    private Category category;
+    private String category;
     
-    @Enumerated(EnumType.STRING)
     @Column(name = "color")
-    private Color color;
+    private String color;
+    
+    @Column(name = "code_article", unique = true)
+    private String codeArticle;
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -75,7 +75,7 @@ public class Product {
     public Product() {}
     
     // Constructor with required parameters
-    public Product(String name, String description, BigDecimal price, Integer stockQuantity, Category category) {
+    public Product(String name, String description, BigDecimal price, Integer stockQuantity, String category) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -175,20 +175,28 @@ public class Product {
         this.updatedAt = updatedAt;
     }
     
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
     
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
     
-    public Color getColor() {
+    public String getColor() {
         return color;
     }
     
-    public void setColor(Color color) {
+    public void setColor(String color) {
         this.color = color;
+    }
+    
+    public String getCodeArticle() {
+        return codeArticle;
+    }
+    
+    public void setCodeArticle(String codeArticle) {
+        this.codeArticle = codeArticle;
     }
     
     public List<CartItem> getCartItems() {
