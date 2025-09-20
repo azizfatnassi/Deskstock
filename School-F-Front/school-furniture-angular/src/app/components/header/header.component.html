@@ -92,8 +92,12 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" (click)="navigateToProfile()">Profile</a></li>
+            <li><a class="dropdown-item" (click)="navigateToMyOrders()">My Orders</a></li>
             <li *ngIf="currentUser?.role === 'ADMIN'">
               <a class="dropdown-item" href="/admin">Admin Panel</a>
+            </li>
+            <li *ngIf="currentUser?.role === 'ADMIN'">
+              <a class="dropdown-item" (click)="navigateToAdminOrders()">Manage Orders</a>
             </li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" (click)="onLogout()">Logout</a></li>

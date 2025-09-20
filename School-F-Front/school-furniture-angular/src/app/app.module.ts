@@ -16,9 +16,15 @@ import { ProductsComponent } from './pages/products/products.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { CartComponent } from './pages/cart/cart.component';
+import { CheckoutComponent } from './components/checkout/checkout.component';
+// OrderConfirmationComponent import removed
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
 import { AdminProductsComponent } from './pages/admin/admin-products/admin-products.component';
 import { AdminUsersComponent } from './pages/admin/admin-users/admin-users.component';
+import { OrderConfirmationComponent } from './components/order-confirmation/order-confirmation.component';
+import { MyOrdersComponent } from './pages/my-orders/my-orders.component';
+import { AdminOrdersComponent } from './pages/admin/admin-orders/admin-orders.component';
+// AdminOrdersComponent import removed
 
 
 @NgModule({
@@ -32,9 +38,15 @@ import { AdminUsersComponent } from './pages/admin/admin-users/admin-users.compo
     LoginComponent,
     RegisterComponent,
     CartComponent,
+    CheckoutComponent,
+    // OrderConfirmationComponent removed
     AdminDashboardComponent,
     AdminProductsComponent,
-    AdminUsersComponent
+    AdminUsersComponent,
+    OrderConfirmationComponent,
+    MyOrdersComponent,
+    AdminOrdersComponent,
+    // AdminOrdersComponent removed
   ],
   imports: [
     BrowserModule,

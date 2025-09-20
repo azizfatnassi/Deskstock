@@ -1,10 +1,8 @@
 package com.schoolfurniture.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import com.schoolfurniture.enums.OrderStatus;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ public class Order {
     @Column(name = "order_id")
     private Integer orderId;
     
-    @Column(name = "order_number", nullable = false, unique = true)
+    @Column(name = "order_number", unique = true, length = 50)
     private String orderNumber;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,9 +25,12 @@ public class Order {
     private User user;
     
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonManagedReference
     private List<OrderItem> orderItems = new ArrayList<>();
     
     @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
+    @Digits(integer = 8, fraction = 2, message = "Total amount must have at most 8 integer digits and 2 decimal places")
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
     
@@ -37,38 +38,32 @@ public class Order {
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
     
+    @Column(name = "order_date", nullable = false, updatable = false)
+    private LocalDateTime orderDate;
+    
     @NotBlank(message = "Shipping address is required")
     @Size(max = 500, message = "Shipping address cannot exceed 500 characters")
-    @Column(name = "shipping_address", nullable = false)
+    @Column(name = "shipping_address", length = 500, nullable = false)
     private String shippingAddress;
     
     @Size(max = 100, message = "Shipping city cannot exceed 100 characters")
-    @Column(name = "shipping_city")
+    @Column(name = "shipping_city", length = 100)
     private String shippingCity;
     
-    @Size(max = 20, message = "Shipping postal code cannot exceed 20 characters")
-    @Column(name = "shipping_postal_code")
+    @Size(max = 20, message = "Postal code cannot exceed 20 characters")
+    @Column(name = "shipping_postal_code", length = 20)
     private String shippingPostalCode;
     
     @Size(max = 20, message = "Phone number cannot exceed 20 characters")
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", length = 20)
     private String phoneNumber;
     
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
     
-    @Column(name = "order_date", nullable = false, updatable = false)
-    private LocalDateTime orderDate;
-    
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
-    @Column(name = "shipped_date")
-    private LocalDateTime shippedDate;
-    
-    @Column(name = "delivered_date")
-    private LocalDateTime deliveredDate;
     
     // Default constructor
     public Order() {}
@@ -88,6 +83,10 @@ public class Order {
         if (orderNumber == null) {
             orderNumber = generateOrderNumber();
         }
+    }
+    
+    private String generateOrderNumber() {
+        return "ORD-" + System.currentTimeMillis();
     }
     
     @PreUpdate
@@ -144,6 +143,14 @@ public class Order {
         this.status = status;
     }
     
+    public LocalDateTime getOrderDate() {
+        return orderDate;
+    }
+    
+    public void setOrderDate(LocalDateTime orderDate) {
+        this.orderDate = orderDate;
+    }
+    
     public String getShippingAddress() {
         return shippingAddress;
     }
@@ -184,36 +191,12 @@ public class Order {
         this.notes = notes;
     }
     
-    public LocalDateTime getOrderDate() {
-        return orderDate;
-    }
-    
-    public void setOrderDate(LocalDateTime orderDate) {
-        this.orderDate = orderDate;
-    }
-    
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-    
-    public LocalDateTime getShippedDate() {
-        return shippedDate;
-    }
-    
-    public void setShippedDate(LocalDateTime shippedDate) {
-        this.shippedDate = shippedDate;
-    }
-    
-    public LocalDateTime getDeliveredDate() {
-        return deliveredDate;
-    }
-    
-    public void setDeliveredDate(LocalDateTime deliveredDate) {
-        this.deliveredDate = deliveredDate;
     }
     
     // Helper methods
@@ -239,15 +222,16 @@ public class Order {
                 .sum();
     }
     
-    private String generateOrderNumber() {
-        return "ORD-" + System.currentTimeMillis();
+    public boolean isPaymentConfirmed() {
+        return status == OrderStatus.CONFIRMED || status == OrderStatus.PROCESSING || 
+               status == OrderStatus.SHIPPED || status == OrderStatus.DELIVERED;
     }
     
     @Override
     public String toString() {
         return "Order{" +
                 "orderId=" + orderId +
-                ", orderNumber='" + orderNumber + '\'' +
+                ", userId=" + (user != null ? user.getUserId() : null) +
                 ", totalAmount=" + totalAmount +
                 ", status=" + status +
                 ", orderDate=" + orderDate +

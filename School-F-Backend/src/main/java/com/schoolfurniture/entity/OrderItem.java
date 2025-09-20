@@ -1,8 +1,8 @@
 package com.schoolfurniture.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 @Entity
@@ -16,6 +16,7 @@ public class OrderItem {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference
     private Order order;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,26 +29,47 @@ public class OrderItem {
     private Integer quantity;
     
     @NotNull(message = "Unit price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Unit price must be greater than 0")
+    @Digits(integer = 8, fraction = 2, message = "Unit price must have at most 8 integer digits and 2 decimal places")
     @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal unitPrice;
     
-    @Column(name = "product_name", nullable = false)
+    // Snapshot fields to preserve product information at time of order
+    @NotBlank(message = "Product name is required")
+    @Size(max = 100, message = "Product name cannot exceed 100 characters")
+    @Column(name = "product_name", nullable = false, length = 100)
     private String productName;
     
-    @Column(name = "product_description")
+    @Size(max = 1000, message = "Product description cannot exceed 1000 characters")
+    @Column(name = "product_description", columnDefinition = "TEXT")
     private String productDescription;
+    
+    @Column(name = "product_image_url")
+    private String productImageUrl;
+    
+    @Column(name = "product_category", length = 50)
+    private String productCategory;
+    
+    @Column(name = "product_color", length = 50)
+    private String productColor;
     
     // Default constructor
     public OrderItem() {}
     
-    // Constructor with parameters
+    // Constructor with required parameters
     public OrderItem(Order order, Product product, Integer quantity, BigDecimal unitPrice) {
         this.order = order;
         this.product = product;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
-        this.productName = product.getName();
-        this.productDescription = product.getDescription();
+        // Copy product information as snapshot
+        if (product != null) {
+            this.productName = product.getName();
+            this.productDescription = product.getDescription();
+            this.productImageUrl = product.getImageUrl();
+            this.productCategory = product.getCategory();
+            this.productColor = product.getColor();
+        }
     }
     
     // Getters and Setters
@@ -73,9 +95,13 @@ public class OrderItem {
     
     public void setProduct(Product product) {
         this.product = product;
+        // Update snapshot fields when product is set
         if (product != null) {
             this.productName = product.getName();
             this.productDescription = product.getDescription();
+            this.productImageUrl = product.getImageUrl();
+            this.productCategory = product.getCategory();
+            this.productColor = product.getColor();
         }
     }
     
@@ -111,15 +137,44 @@ public class OrderItem {
         this.productDescription = productDescription;
     }
     
+    public String getProductImageUrl() {
+        return productImageUrl;
+    }
+    
+    public void setProductImageUrl(String productImageUrl) {
+        this.productImageUrl = productImageUrl;
+    }
+    
+    public String getProductCategory() {
+        return productCategory;
+    }
+    
+    public void setProductCategory(String productCategory) {
+        this.productCategory = productCategory;
+    }
+    
+    public String getProductColor() {
+        return productColor;
+    }
+    
+    public void setProductColor(String productColor) {
+        this.productColor = productColor;
+    }
+    
     // Helper methods
     public BigDecimal getSubtotal() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+        if (quantity != null && unitPrice != null) {
+            return unitPrice.multiply(BigDecimal.valueOf(quantity));
+        }
+        return BigDecimal.ZERO;
     }
     
     @Override
     public String toString() {
         return "OrderItem{" +
                 "orderItemId=" + orderItemId +
+                ", orderId=" + (order != null ? order.getOrderId() : null) +
+                ", productId=" + (product != null ? product.getProductId() : null) +
                 ", productName='" + productName + '\'' +
                 ", quantity=" + quantity +
                 ", unitPrice=" + unitPrice +

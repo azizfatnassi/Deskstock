@@ -80,6 +80,10 @@ export class AdminDashboardComponent implements OnInit {
     this.router.navigate(['/admin/products']);
   }
 
+  navigateToOrders(): void {
+    this.router.navigate(['/admin/orders']);
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

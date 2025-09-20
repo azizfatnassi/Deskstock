@@ -39,6 +39,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationRequest registrationRequest) {
         try {
+            System.out.println("Registration request received: " + registrationRequest.getName() + ", " + registrationRequest.getEmail() + ", role: " + registrationRequest.getRole());
             User user = userService.register(registrationRequest);
             
             Map<String, Object> response = new HashMap<>();

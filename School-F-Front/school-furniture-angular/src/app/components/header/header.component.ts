@@ -83,6 +83,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/profile']);
   }
 
+  navigateToMyOrders(): void {
+    this.router.navigate(['/my-orders']);
+  }
+
+  navigateToAdminOrders(): void {
+    this.router.navigate(['/admin/orders']);
+  }
+
   navigateToLogin(): void {
     this.router.navigate(['/login']);
   }

@@ -208,7 +208,7 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public List<Object[]> getMostPopularProducts(Pageable pageable) {
-        return productRepository.findMostPopularProducts(pageable);
+        return productRepository.findMostPopularProducts();
     }
     
     /**

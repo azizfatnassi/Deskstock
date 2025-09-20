@@ -1,4 +1,4 @@
-package com.schoolfurniture.enums;
+package com.schoolfurniture.entity;
 
 public enum OrderStatus {
     PENDING,

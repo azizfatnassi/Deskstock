@@ -132,8 +132,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   proceedToCheckout(): void {
-    // Navigate to checkout when implemented
-    console.log('Checkout functionality to be implemented');
+    this.router.navigate(['/checkout']);
   }
 
   getItemTotal(item: CartItemResponse): number {

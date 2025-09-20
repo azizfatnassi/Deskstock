@@ -220,15 +220,19 @@ export class CartService {
     this.loadCartItems().subscribe();
   }
 
-  private updateCartSummary(items: CartItemResponse[]): void {
-    const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const totalPrice = items.reduce((sum, item) => {
+  public calculateTotalPrice(items: CartItemResponse[]): number {
+    return items.reduce((sum, item) => {
       // Add null checks for item.product and item.product.price
       if (item.product && item.product.price && item.quantity) {
         return sum + (item.product.price * item.quantity);
       }
       return sum;
     }, 0);
+  }
+
+  private updateCartSummary(items: CartItemResponse[]): void {
+    const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalPrice = this.calculateTotalPrice(items);
     
     this.cartSummarySubject.next({ totalItems, totalPrice });
   }

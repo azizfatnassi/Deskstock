@@ -114,8 +114,7 @@ export class CartDropdownComponent implements OnInit, OnDestroy {
 
   goToCheckout(): void {
     this.closeDropdown.emit();
-    // Navigate to checkout when implemented
-    console.log('Checkout functionality to be implemented');
+    this.router.navigate(['/checkout']);
   }
 
   onBackdropClick(): void {

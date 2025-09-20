@@ -1,0 +1,105 @@
+<div class="my-orders-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>My Orders</h1>
+    <p class="subtitle">View and track your order history</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading your orders...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && errorMessage" class="alert alert-error">
+    <div class="alert-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button class="btn btn-secondary" (click)="refreshOrders()">
+      <i class="fas fa-refresh"></i> Try Again
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && orders.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-shopping-bag"></i>
+    </div>
+    <h3>No Orders Yet</h3>
+    <p>You haven't placed any orders yet. Start shopping to see your orders here!</p>
+    <button class="btn btn-primary" (click)="continueShopping()">
+      <i class="fas fa-shopping-cart"></i> Start Shopping
+    </button>
+  </div>
+
+  <!-- Orders List -->
+  <div *ngIf="!isLoading && !errorMessage && orders.length > 0" class="orders-content">
+    <div class="orders-header">
+      <h2>Your Orders ({{ orders.length }})</h2>
+      <button class="btn btn-secondary" (click)="refreshOrders()">
+        <i class="fas fa-refresh"></i> Refresh
+      </button>
+    </div>
+
+    <div class="orders-list">
+      <div *ngFor="let order of orders" class="order-card">
+        <div class="order-header">
+          <div class="order-info">
+            <h3 class="order-id">Order #{{ order.orderId }}</h3>
+            <p class="order-date">{{ order.orderDate | date:'medium' }}</p>
+          </div>
+          <div class="order-status">
+            <span class="status-badge" [ngClass]="getStatusClass(order)">
+              {{ getStatusText(order) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="order-details">
+          <div class="order-summary">
+            <div class="summary-item">
+              <span class="label">Customer:</span>
+              <span class="value">{{ order.customerName }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Items:</span>
+              <span class="value">{{ getTotalItems(order) }} item(s)</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Total:</span>
+              <span class="value total-amount">${{ order.totalAmount | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="order-items-preview" *ngIf="order.orderItems && order.orderItems.length > 0">
+            <h4>Items:</h4>
+            <div class="items-list">
+              <div *ngFor="let item of order.orderItems.slice(0, 3)" class="item-preview">
+                <span class="item-name">{{ item.productName }}</span>
+                <span class="item-quantity">x{{ item.quantity }}</span>
+                <span class="item-price">${{ item.unitPrice | number:'1.2-2' }}</span>
+              </div>
+              <div *ngIf="order.orderItems.length > 3" class="more-items">
+                +{{ order.orderItems.length - 3 }} more item(s)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <button class="btn btn-primary" (click)="viewOrderDetails(order.orderId)">
+            <i class="fas fa-eye"></i> View Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="orders-footer">
+      <button class="btn btn-secondary" (click)="continueShopping()">
+        <i class="fas fa-shopping-cart"></i> Continue Shopping
+      </button>
+    </div>
+  </div>
+</div>

@@ -239,6 +239,10 @@
   background: linear-gradient(135deg, #007bff, #6610f2);
 }
 
+.orders-icon {
+  background: linear-gradient(135deg, #fd7e14, #e83e8c);
+}
+
 .card-header h2 {
   margin: 0;
   color: #2c3e50;

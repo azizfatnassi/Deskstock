@@ -1,6 +1,7 @@
 package com.schoolfurniture.repository;
 
 import com.schoolfurniture.entity.Product;
+import com.schoolfurniture.entity.OrderStatus;
 // Removed enum imports - now using String fields
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -117,14 +118,14 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByStockQuantityRange(@Param("minStock") Integer minStock, @Param("maxStock") Integer maxStock);
     
     /**
-     * Find most popular products (by order count)
+     * Find most popular products based on order quantity
      */
-    @Query("SELECT p, COUNT(oi) as orderCount FROM Product p " +
-           "LEFT JOIN p.orderItems oi " +
-           "WHERE p.isActive = true " +
+    @Query("SELECT p, COALESCE(SUM(oi.quantity), 0) as orderCount " +
+           "FROM Product p " +
+           "LEFT JOIN p.orderItems oi ON oi.order.status = 'CONFIRMED' " +
            "GROUP BY p " +
            "ORDER BY orderCount DESC")
-    List<Object[]> findMostPopularProducts(Pageable pageable);
+    List<Object[]> findMostPopularProducts();
     
     /**
      * Find products by category name

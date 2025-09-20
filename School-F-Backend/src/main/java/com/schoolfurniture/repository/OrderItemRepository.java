@@ -2,132 +2,107 @@ package com.schoolfurniture.repository;
 
 import com.schoolfurniture.entity.Order;
 import com.schoolfurniture.entity.OrderItem;
+import com.schoolfurniture.entity.OrderStatus;
 import com.schoolfurniture.entity.Product;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     
-    /**
-     * Find order items by order
-     */
+    // Find order items by order
     List<OrderItem> findByOrder(Order order);
     
-    /**
-     * Find order items by product
-     */
+    // Find order items by order ID
+    List<OrderItem> findByOrderOrderId(Integer orderId);
+    
+    // Find order items by product
     List<OrderItem> findByProduct(Product product);
     
-    /**
-     * Find order items by order ID
-     */
-    @Query("SELECT oi FROM OrderItem oi WHERE oi.order.orderId = :orderId")
-    List<OrderItem> findByOrderId(@Param("orderId") Integer orderId);
+    // Find order items by product ID
+    List<OrderItem> findByProductProductId(Integer productId);
     
-    /**
-     * Find order items by product ID
-     */
-    @Query("SELECT oi FROM OrderItem oi WHERE oi.product.productId = :productId")
-    List<OrderItem> findByProductId(@Param("productId") Integer productId);
+    // Find order item by order and product
+    Optional<OrderItem> findByOrderAndProduct(Order order, Product product);
     
-    /**
-     * Get most sold products
-     */
-    @Query("SELECT oi.product, SUM(oi.quantity) as totalSold " +
+    // Count order items by order
+    long countByOrder(Order order);
+    
+    // Count order items by product
+    long countByProduct(Product product);
+    
+    // Get total quantity for a product across all orders
+    @Query("SELECT COALESCE(SUM(oi.quantity), 0) FROM OrderItem oi WHERE oi.product = :product")
+    Long getTotalQuantityByProduct(@Param("product") Product product);
+    
+    // Get total quantity for a product in confirmed orders only
+    @Query("SELECT COALESCE(SUM(oi.quantity), 0) FROM OrderItem oi WHERE oi.product = :product AND oi.order.status = 'CONFIRMED'")
+    Long getConfirmedQuantityByProduct(@Param("product") Product product);
+    
+    // Get total revenue for a product
+    @Query("SELECT COALESCE(SUM(oi.quantity * oi.unitPrice), 0) FROM OrderItem oi WHERE oi.product = :product AND oi.order.status = 'CONFIRMED'")
+    BigDecimal getTotalRevenueByProduct(@Param("product") Product product);
+    
+    // Find most popular products (by quantity sold)
+    @Query("SELECT oi.product, SUM(oi.quantity) as totalQuantity " +
            "FROM OrderItem oi " +
-           "JOIN oi.order o " +
-           "WHERE o.status NOT IN ('CANCELLED', 'REFUNDED') " +
+           "WHERE oi.order.status = 'CONFIRMED' " +
            "GROUP BY oi.product " +
-           "ORDER BY totalSold DESC")
-    List<Object[]> findMostSoldProducts(Pageable pageable);
+           "ORDER BY totalQuantity DESC")
+    List<Object[]> findMostPopularProducts();
     
-    /**
-     * Get most sold products in date range
-     */
-    @Query("SELECT oi.product, SUM(oi.quantity) as totalSold " +
+    // Find most popular products with limit
+    @Query(value = "SELECT oi.product_id, p.name, SUM(oi.quantity) as total_quantity " +
+                   "FROM order_items oi " +
+                   "JOIN products p ON oi.product_id = p.product_id " +
+                   "JOIN orders o ON oi.order_id = o.order_id " +
+                   "WHERE o.status = 'CONFIRMED' " +
+                   "GROUP BY oi.product_id, p.name " +
+                   "ORDER BY total_quantity DESC " +
+                   "LIMIT :limit", nativeQuery = true)
+    List<Object[]> findTopSellingProducts(@Param("limit") int limit);
+    
+    // Find highest revenue products
+    @Query("SELECT oi.product, SUM(oi.quantity * oi.unitPrice) as totalRevenue " +
            "FROM OrderItem oi " +
-           "JOIN oi.order o " +
-           "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
-           "AND o.status NOT IN ('CANCELLED', 'REFUNDED') " +
+           "WHERE oi.order.status = 'CONFIRMED' " +
            "GROUP BY oi.product " +
-           "ORDER BY totalSold DESC")
-    List<Object[]> findMostSoldProductsInDateRange(
-            @Param("startDate") LocalDateTime startDate, 
-            @Param("endDate") LocalDateTime endDate, 
-            Pageable pageable);
+           "ORDER BY totalRevenue DESC")
+    List<Object[]> findHighestRevenueProducts();
     
-    /**
-     * Get total quantity sold for a product
-     */
-    @Query("SELECT SUM(oi.quantity) FROM OrderItem oi " +
-           "JOIN oi.order o " +
-           "WHERE oi.product = :product " +
-           "AND o.status NOT IN ('CANCELLED', 'REFUNDED')")
-    Long getTotalQuantitySoldForProduct(@Param("product") Product product);
+    // Get order items with subtotal greater than specified amount
+    @Query("SELECT oi FROM OrderItem oi WHERE (oi.quantity * oi.unitPrice) >= :minSubtotal ORDER BY (oi.quantity * oi.unitPrice) DESC")
+    List<OrderItem> findOrderItemsWithMinSubtotal(@Param("minSubtotal") BigDecimal minSubtotal);
     
-    /**
-     * Get revenue by product
-     */
-    @Query("SELECT oi.product, SUM(oi.quantity * oi.unitPrice) as revenue " +
+    // Find order items by product category
+    @Query("SELECT oi FROM OrderItem oi WHERE oi.productCategory = :category")
+    List<OrderItem> findByProductCategory(@Param("category") String category);
+    
+    // Get category sales statistics
+    @Query("SELECT oi.productCategory, COUNT(oi), SUM(oi.quantity), SUM(oi.quantity * oi.unitPrice) " +
            "FROM OrderItem oi " +
-           "JOIN oi.order o " +
-           "WHERE o.status NOT IN ('CANCELLED', 'REFUNDED') " +
-           "GROUP BY oi.product " +
-           "ORDER BY revenue DESC")
-    List<Object[]> getRevenueByProduct(Pageable pageable);
+           "WHERE oi.order.status = 'CONFIRMED' " +
+           "GROUP BY oi.productCategory " +
+           "ORDER BY SUM(oi.quantity * oi.unitPrice) DESC")
+    List<Object[]> getCategorySalesStatistics();
     
-    /**
-     * Get sales data by category
-     */
-    @Query("SELECT p.category, SUM(oi.quantity) as totalSold, SUM(oi.quantity * oi.unitPrice) as revenue " +
-           "FROM OrderItem oi " +
-           "JOIN oi.product p " +
-           "JOIN oi.order o " +
-           "WHERE o.status NOT IN ('CANCELLED', 'REFUNDED') " +
-           "GROUP BY p.category " +
-           "ORDER BY revenue DESC")
-    List<Object[]> getSalesDataByCategory();
+    // Check if product has been ordered
+    boolean existsByProduct(Product product);
     
-    /**
-     * Get sales data by color
-     */
-    @Query("SELECT p.color, SUM(oi.quantity) as totalSold, SUM(oi.quantity * oi.unitPrice) as revenue " +
-           "FROM OrderItem oi " +
-           "JOIN oi.product p " +
-           "JOIN oi.order o " +
-           "WHERE o.status NOT IN ('CANCELLED', 'REFUNDED') " +
-           "AND p.color IS NOT NULL " +
-           "GROUP BY p.color " +
-           "ORDER BY revenue DESC")
-    List<Object[]> getSalesDataByColor();
+    // Check if product has been ordered in confirmed orders
+    @Query("SELECT COUNT(oi) > 0 FROM OrderItem oi WHERE oi.product = :product AND oi.order.status = 'CONFIRMED'")
+    boolean existsByProductInConfirmedOrders(@Param("product") Product product);
     
-    /**
-     * Find order items by user ID
-     */
-    @Query("SELECT oi FROM OrderItem oi " +
-           "JOIN oi.order o " +
-           "WHERE o.user.userId = :userId " +
-           "ORDER BY o.orderDate DESC")
-    List<OrderItem> findByUserId(@Param("userId") Integer userId);
+    // Delete order items by order (useful for cascade operations)
+    void deleteByOrder(Order order);
     
-    /**
-     * Get product performance metrics
-     */
-    @Query("SELECT oi.product, " +
-           "COUNT(DISTINCT oi.order) as orderCount, " +
-           "SUM(oi.quantity) as totalQuantity, " +
-           "AVG(oi.quantity) as avgQuantityPerOrder, " +
-           "SUM(oi.quantity * oi.unitPrice) as totalRevenue " +
-           "FROM OrderItem oi " +
-           "JOIN oi.order o " +
-           "WHERE o.status NOT IN ('CANCELLED', 'REFUNDED') " +
-           "GROUP BY oi.product")
-    List<Object[]> getProductPerformanceMetrics();
+    // Get average order item quantity for a product
+    @Query("SELECT AVG(oi.quantity) FROM OrderItem oi WHERE oi.product = :product")
+    Double getAverageQuantityByProduct(@Param("product") Product product);
 }

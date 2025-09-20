@@ -1,0 +1,200 @@
+<div class="admin-orders-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBackToDashboard()" title="Back to Dashboard">
+        <i class="fas fa-arrow-left"></i>
+        Dashboard
+      </button>
+      <h1>Order Management</h1>
+      <button class="refresh-btn" (click)="refreshOrders()" [disabled]="isLoading">
+        <i class="fas fa-refresh"></i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="statistics-section" *ngIf="statistics">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon total">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ statistics.totalOrders }}</h3>
+          <p>Total Orders</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon pending">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ statistics.pendingOrders }}</h3>
+          <p>Pending Orders</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon confirmed">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ statistics.confirmedOrders }}</h3>
+          <p>Confirmed Orders</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon revenue">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+          <h3>${{ statistics.totalRevenue | number:'1.2-2' }}</h3>
+          <p>Total Revenue</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        placeholder="Search by Order ID, Customer, or User..." 
+        [(ngModel)]="searchQuery" 
+        (input)="onSearchChange()"
+      >
+    </div>
+    
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()">
+        <option value="all">All Orders</option>
+        <option value="pending">Pending</option>
+        <option value="confirmed">Confirmed</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label>Sort by:</label>
+      <select [(ngModel)]="sortBy" (change)="onSortChange()">
+        <option value="date">Date</option>
+        <option value="amount">Amount</option>
+        <option value="customer">Customer</option>
+        <option value="status">Status</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label>Order:</label>
+      <select [(ngModel)]="sortOrder" (change)="onSortChange()">
+        <option value="desc">Descending</option>
+        <option value="asc">Ascending</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages" *ngIf="errorMessage || successMessage">
+    <div class="alert alert-success" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
+    <div class="alert alert-error" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading orders...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && filteredOrders.length === 0 && !errorMessage" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-inbox"></i>
+    </div>
+    <h3>No Orders Found</h3>
+    <p *ngIf="searchQuery || selectedStatus !== 'all'">Try adjusting your filters to see more results.</p>
+    <p *ngIf="!searchQuery && selectedStatus === 'all'">No orders have been placed yet.</p>
+  </div>
+
+  <!-- Orders Table -->
+  <div *ngIf="!isLoading && filteredOrders.length > 0" class="orders-content">
+    <div class="orders-header">
+      <h2>Orders ({{ filteredOrders.length }})</h2>
+    </div>
+
+    <div class="orders-table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>User</th>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of filteredOrders" class="order-row">
+            <td class="order-id">
+              <strong>{{ order.orderId }}</strong>
+            </td>
+            <td class="customer-name">
+              {{ order.customerName }}
+            </td>
+            <td class="user-name">
+              {{ order.userName }}
+            </td>
+            <td class="order-date">
+              {{ order.orderDate | date:'short' }}
+            </td>
+            <td class="items-count">
+              {{ getTotalItems(order) }} item(s)
+            </td>
+            <td class="total-amount">
+              <strong>${{ order.totalAmount | number:'1.2-2' }}</strong>
+            </td>
+            <td class="order-status">
+              <span class="status-badge" [ngClass]="getStatusClass(order)">
+                {{ getStatusText(order) }}
+              </span>
+            </td>
+            <td class="order-actions">
+              <div class="action-buttons">
+                <button 
+                  class="btn btn-sm btn-primary" 
+                  (click)="viewOrderDetails(order.orderId)"
+                  title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button 
+                  *ngIf="!order.status" 
+                  class="btn btn-sm btn-success" 
+                  (click)="confirmOrder(order.orderId)"
+                  title="Confirm Order">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="cancelOrder(order.orderId)"
+                  title="Cancel Order">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,181 @@
+<div class="checkout-container">
+  <div class="checkout-header">
+    <h1 class="checkout-title">
+      <i class="fas fa-shopping-cart"></i>
+      Checkout
+    </h1>
+    <p class="checkout-subtitle">Complete your order</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading your cart...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-error">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ errorMessage }}
+    <button *ngIf="cartItems.length === 0" class="btn btn-primary" (click)="router.navigate(['/products'])">
+      Continue Shopping
+    </button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && cartItems.length > 0" class="checkout-content">
+    <div class="checkout-grid">
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h2 class="section-title">
+          <i class="fas fa-receipt"></i>
+          Order Summary
+        </h2>
+        
+        <div class="cart-items">
+          <div *ngFor="let item of cartItems" class="cart-item">
+            <div class="item-icon">
+              <i class="fas fa-cube"></i>
+            </div>
+            <div class="item-details">
+              <h4 class="item-name">{{ item.product.name }}</h4>
+              <p class="item-price">${{ item.product.price | number:'1.2-2' }}</p>
+              <p class="item-quantity">Quantity: {{ item.quantity }}</p>
+              <p class="item-subtotal">Subtotal: ${{ (item.product.price * item.quantity) | number:'1.2-2' }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="order-totals">
+          <div class="total-row">
+            <span class="total-label">Items ({{ getTotalItems() }}):</span>
+            <span class="total-value">${{ cartTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label">Shipping:</span>
+            <span class="total-value">Free</span>
+          </div>
+          <div class="total-row total-final">
+            <span class="total-label">Total:</span>
+            <span class="total-value">${{ cartTotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checkout Form -->
+      <div class="checkout-form">
+        <h2 class="section-title">
+          <i class="fas fa-user"></i>
+          Shipping Information
+        </h2>
+        
+        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="form">
+          <div class="form-group">
+            <label for="customerName" class="form-label">
+              Full Name <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="customerName" 
+              formControlName="customerName"
+              class="form-input"
+              [class.error]="isFieldInvalid('customerName')"
+              placeholder="Enter your full name">
+            <div *ngIf="isFieldInvalid('customerName')" class="field-error">
+              {{ getFieldError('customerName') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="customerEmail" class="form-label">
+              Email Address <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              id="customerEmail" 
+              formControlName="customerEmail"
+              class="form-input"
+              [class.error]="isFieldInvalid('customerEmail')"
+              placeholder="Enter your email address">
+            <div *ngIf="isFieldInvalid('customerEmail')" class="field-error">
+              {{ getFieldError('customerEmail') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="customerPhone" class="form-label">
+              Phone Number <span class="required">*</span>
+            </label>
+            <input 
+              type="tel" 
+              id="customerPhone" 
+              formControlName="customerPhone"
+              class="form-input"
+              [class.error]="isFieldInvalid('customerPhone')"
+              placeholder="Enter your phone number">
+            <div *ngIf="isFieldInvalid('customerPhone')" class="field-error">
+              {{ getFieldError('customerPhone') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="shippingAddress" class="form-label">
+              Shipping Address <span class="required">*</span>
+            </label>
+            <textarea 
+              id="shippingAddress" 
+              formControlName="shippingAddress"
+              class="form-textarea"
+              [class.error]="isFieldInvalid('shippingAddress')"
+              placeholder="Enter your complete shipping address"
+              rows="3"></textarea>
+            <div *ngIf="isFieldInvalid('shippingAddress')" class="field-error">
+              {{ getFieldError('shippingAddress') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="notes" class="form-label">
+              Order Notes (Optional)
+            </label>
+            <textarea 
+              id="notes" 
+              formControlName="notes"
+              class="form-textarea"
+              placeholder="Any special instructions or notes for your order"
+              rows="2"></textarea>
+            <div *ngIf="isFieldInvalid('notes')" class="field-error">
+              {{ getFieldError('notes') }}
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="goBackToCart()"
+              [disabled]="isSubmitting">
+              <i class="fas fa-arrow-left"></i>
+              Back to Cart
+            </button>
+            
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="checkoutForm.invalid || isSubmitting || cartItems.length === 0">
+              <span *ngIf="isSubmitting" class="btn-spinner"></span>
+              <i *ngIf="!isSubmitting" class="fas fa-credit-card"></i>
+              {{ isSubmitting ? 'Placing Order...' : 'Place Order' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
